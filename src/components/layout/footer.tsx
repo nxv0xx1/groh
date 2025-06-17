@@ -11,7 +11,7 @@ const Footer = () => {
           <div className="flex flex-col items-center md:items-start">
             <Link href="/" className="flex items-center space-x-2 mb-4">
               <LeafIcon className="h-8 w-8 text-primary" />
-              <span className="font-headline text-xl font-bold text-primary">GROH Connect</span>
+              <span className="font-headline text-xl font-bold text-primary">GROH</span>
             </Link>
             <p className="text-sm text-center md:text-left">
               Supporting God's Righteousness Orphan Home.
@@ -37,7 +37,7 @@ const Footer = () => {
         </div>
         <div className="mt-10 border-t border-border pt-8 text-center">
           <p className="text-sm">
-            &copy; {currentYear} GROH Connect. All rights reserved. Inspired by God's Righteousness Orphan Home.
+            &copy; {currentYear} GROH. All rights reserved. Inspired by God's Righteousness Orphan Home.
           </p>
         </div>
       </div>

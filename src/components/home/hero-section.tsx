@@ -23,7 +23,7 @@ const HeroSection = () => {
             <span className="block text-foreground">Building Hope.</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            GROH Connect is dedicated to supporting God's Righteousness Orphan Home, providing a loving environment and essential resources for children in need.
+            GROH is dedicated to supporting God's Righteousness Orphan Home, providing a loving environment and essential resources for children in need.
           </p>
           <div className="space-x-4">
             <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300">

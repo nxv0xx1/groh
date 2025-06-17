@@ -60,7 +60,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-20">
           <Link href="/" className="flex items-center space-x-2">
             <LeafIcon className="h-8 w-8 text-primary" />
-            <span className="font-headline text-2xl font-bold text-primary">GROH Connect</span>
+            <span className="font-headline text-2xl font-bold text-primary">GROH</span>
           </Link>
 
           <nav className="hidden md:flex items-center space-x-2">
@@ -86,7 +86,7 @@ const Navbar = () => {
                     <div className="flex justify-between items-center">
                          <Link href="/" className="flex items-center space-x-2" onClick={() => setIsMobileMenuOpen(false)}>
                             <LeafIcon className="h-8 w-8 text-primary" />
-                            <span className="font-headline text-xl font-bold text-primary">GROH Connect</span>
+                            <span className="font-headline text-xl font-bold text-primary">GROH</span>
                         </Link>
                         <SheetClose asChild>
                              <Button variant="ghost" size="icon">

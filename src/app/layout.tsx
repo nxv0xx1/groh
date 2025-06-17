@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'GROH Connect',
+  title: 'GROH',
   description: 'Connecting hearts to God\'s Righteousness Orphan Home',
 };
 
