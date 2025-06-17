@@ -1,8 +1,9 @@
+
 import AiRecommendationsForm from './ai-recommendations-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image'; // Added import for Image
 
 const GetInvolvedSection = () => {
   return (
@@ -22,26 +23,35 @@ const GetInvolvedSection = () => {
 
           <div className="space-y-8">
             <Card className="shadow-lg border-accent/20">
-              <CardHeader className="text-center">
-                 <div className="mx-auto mb-4 bg-accent/10 p-3 rounded-full w-fit">
-                    <Heart className="h-10 w-10 text-accent" />
+              <div className="w-full bg-slate-100 dark:bg-slate-800 p-4 flex justify-center items-center">
+                <div className="relative w-48 h-48 sm:w-56 sm:h-56">
+                    <Image
+                      src="/groh-logo.png" 
+                      alt="GROH Shelter & Education - Playful logo with children and a house"
+                      layout="fill"
+                      objectFit="contain"
+                      data-ai-hint="children shelter education logo"
+                    />
                 </div>
-                <CardTitle className="font-headline text-2xl md:text-3xl text-accent-foreground">Donate Securely</CardTitle>
+              </div>
+              <CardHeader className="text-center">
+                <CardTitle className="font-headline text-2xl md:text-3xl text-accent-foreground">Donate Securely via Paystack</CardTitle>
                 <CardDescription className="text-md text-muted-foreground">
-                  Your generous donations directly support the children's needs, from education to healthcare. Every contribution counts.
+                  Your generous donations directly support the children's needs&mdash;from education to healthcare. Every contribution counts towards a brighter future.
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-center">
                 <p className="text-muted-foreground mb-6">
-                  Click the button below to make a secure donation through the official GROH website.
+                  Click the button below to make a secure one-time or recurring donation through Paystack.
                 </p>
                 <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground px-10 py-3 text-lg rounded-lg">
-                  <a href="https://groh.ng" target="_blank" rel="noopener noreferrer">
-                    Donate via groh.ng
+                  {/* IMPORTANT: Update this link to your actual Paystack donation page */}
+                  <a href="https://paystack.com/pay/your-groh-paystack-link" target="_blank" rel="noopener noreferrer">
+                    Donate with Paystack
                   </a>
                 </Button>
                  <p className="mt-4 text-sm text-muted-foreground">
-                    You will be redirected to the official God's Righteousness Orphan Home website.
+                    You will be redirected to our secure Paystack payment page. Thank you for your support!
                 </p>
               </CardContent>
             </Card>
