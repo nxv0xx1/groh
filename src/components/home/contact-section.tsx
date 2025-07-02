@@ -42,16 +42,15 @@ const ContactSection = () => {
               </CardHeader>
               <CardContent className="space-y-4 text-center">
                 <div>
-                  <h4 className="font-semibold text-lg text-foreground mb-1">God's Righteousness Orphan Home</h4>
+                  <h4 className="font-semibold text-lg text-foreground mb-1">God's Righteousness Orphanage Home</h4>
                   <p className="text-muted-foreground">
-                    123 Charity Lane, Hope City, Nigeria (Placeholder Address) <br />
-                    Please refer to <a href="https://groh.ng" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">groh.ng</a> for the official address.
+                    Avuonkwu Olokoro, Umuahia South L. G. A. <br /> Abia State. Nigeria
                   </p>
                 </div>
                 <div>
                   <h4 className="font-semibold text-lg text-foreground mb-1 flex items-center justify-center gap-2"><Phone className="h-5 w-5 text-accent"/>Phone</h4>
                   <p className="text-muted-foreground">
-                    <a href="tel:+234XXXXXXXXXX" className="hover:text-primary transition-colors">+234 XXX XXXX XXX</a> (Placeholder)
+                    <a href="tel:07038010835" className="hover:text-primary transition-colors">07038010835</a> / <a href="tel:+2347017924476" className="hover:text-primary transition-colors">+234 701 792 4476</a>
                   </p>
                 </div>
                  <div>

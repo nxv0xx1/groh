@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import LeafIcon from '@/components/icons/leaf-icon';
+import TiktokIcon from '@/components/icons/tiktok-icon';
+import { Facebook, Instagram } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -24,15 +26,28 @@ const Footer = () => {
               <li><Link href="#about" className="hover:text-primary transition-colors">About Us</Link></li>
               <li><Link href="#get-involved" className="hover:text-primary transition-colors">Get Involved</Link></li>
               <li><Link href="#contact" className="hover:text-primary transition-colors">Contact</Link></li>
-              <li><a href="https://groh.ng" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Donate</a></li>
+              <li><a href="https://paystack.com/pay/your-groh-paystack-link" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Donate</a></li>
             </ul>
           </div>
 
           <div className="text-center md:text-left">
             <h3 className="font-headline text-lg font-semibold mb-3 text-primary">Connect</h3>
             <p className="mb-1">Email: <a href="mailto:info@groh.ng" className="hover:text-primary transition-colors">info@groh.ng</a></p>
-            <p>Phone: <a href="tel:+234XXXXXXXXXX" className="hover:text-primary transition-colors">+234 XXX XXXX XXX</a> (Placeholder)</p>
-            {/* Add social media links if available */}
+            <p className="mb-4">Phone: <a href="tel:07038010835" className="hover:text-primary transition-colors">07038010835</a></p>
+            <div className="flex justify-center md:justify-start space-x-4">
+                <a href="https://www.facebook.com/share/16YAGFmnai/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
+                    <Facebook className="h-6 w-6" />
+                    <span className="sr-only">Facebook</span>
+                </a>
+                <a href="https://www.instagram.com/godsrighteousnessorphanagehome?igsh=bXRmNTQ5Z2kzNmJn" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
+                    <Instagram className="h-6 w-6" />
+                    <span className="sr-only">Instagram</span>
+                </a>
+                <a href="https://www.tiktok.com/@groh_orphanage?_t=ZN-8xX5hxGn8uE&_r=1" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary">
+                    <TiktokIcon className="h-6 w-6" />
+                    <span className="sr-only">TikTok</span>
+                </a>
+            </div>
           </div>
         </div>
         <div className="mt-10 border-t border-border pt-8 text-center">
