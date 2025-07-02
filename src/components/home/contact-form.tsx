@@ -1,7 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from 'react-dom';
-import { useEffect } from 'react';
+import { useFormStatus } from 'react-dom';
+import { useEffect, useActionState } from 'react';
 import { useForm } from 'react-hook-form'; // Can be used for client-side validation before server action
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -44,7 +44,7 @@ function SubmitButton() {
 
 const ContactForm = () => {
   const { toast } = useToast();
-  const [state, formAction] = useFormState<ContactFormState | undefined, FormData>(submitContactForm, undefined);
+  const [state, formAction] = useActionState<ContactFormState | undefined, FormData>(submitContactForm, undefined);
   
   // Using react-hook-form for client-side validation feedback, though server action handles final validation
   const form = useForm<ContactFormData>({
