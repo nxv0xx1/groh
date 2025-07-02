@@ -5,10 +5,12 @@ import AboutSection from '@/components/home/about-section';
 import ImageCarousel from '@/components/home/image-carousel';
 import GetInvolvedSection from '@/components/home/get-involved-section';
 import ContactSection from '@/components/home/contact-section';
+import FraudWarningDialog from '@/components/home/fraud-warning-dialog';
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
+      <FraudWarningDialog />
       <Navbar />
       <main className="flex-grow">
         <div className="animate-in fade-in duration-500">
