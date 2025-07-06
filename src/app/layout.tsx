@@ -3,7 +3,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: "GROH Hope Home",
+  title: "G.R.O.H. | God's Righteousness Orphanage Home",
   description: "God's Righteousness Orphanage Home - A place of belonging, healing, and hope.",
 };
 
