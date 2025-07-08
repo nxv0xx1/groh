@@ -13,7 +13,6 @@ interface HeaderProps {
 const navLinks = [
     { href: "#about", label: "About" },
     { href: "#sponsor", label: "Sponsor" },
-    { href: "#donate", label: "Donate" },
     { href: "#contact", label: "Contact" },
 ];
 
@@ -72,31 +71,21 @@ export function Header({ logo }: HeaderProps) {
             </Sheet>
         </div>
 
-        {/* Desktop Header: Centered logo, split nav */}
-        <div className="hidden w-full items-center md:flex">
-            <nav className="flex flex-1 items-center justify-start gap-8 text-sm font-medium">
-                {navLinks.slice(0, 2).map((link) => (
-                    <Link key={link.href} href={link.href} className="text-muted-foreground transition-colors hover:text-foreground">
-                        {link.label}
-                    </Link>
-                ))}
-            </nav>
+        {/* Desktop Header: Logo left, nav right */}
+        <div className="hidden w-full items-center justify-between md:flex">
+            <Link href="/" className="flex items-center gap-3">
+                {logo ? (
+                    <Image src={logo} alt="G.R.O.H. Logo" width={48} height={48} className="rounded-full object-cover" />
+                ) : (
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                        <Mountain className="h-6 w-6" />
+                    </div>
+                )}
+                <span className="font-headline text-lg font-bold">God's Righteousness Orphanage Home</span>
+            </Link>
 
-            <div className="flex-shrink-0">
-                <Link href="/" className="flex flex-col items-center gap-2 text-center">
-                    {logo ? (
-                        <Image src={logo} alt="G.R.O.H. Logo" width={48} height={48} className="rounded-full object-cover" />
-                    ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                            <Mountain className="h-6 w-6" />
-                        </div>
-                    )}
-                    <span className="font-headline text-xs font-bold whitespace-nowrap">God's Righteousness Orphanage Home</span>
-                </Link>
-            </div>
-
-            <nav className="flex flex-1 items-center justify-end gap-8 text-sm font-medium">
-                {navLinks.slice(2).map((link) => (
+            <nav className="flex items-center gap-6 text-sm font-medium">
+                {navLinks.map((link) => (
                     <Link key={link.href} href={link.href} className="text-muted-foreground transition-colors hover:text-foreground">
                         {link.label}
                     </Link>
