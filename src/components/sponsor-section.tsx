@@ -12,7 +12,7 @@ export function SponsorSection({ sponsorImage }: { sponsorImage: string }) {
     <>
       <section id="sponsor">
         <div className="container mx-auto">
-          <div className="bg-card text-card-foreground rounded-2xl shadow-xl p-4 md:p-8 lg:p-12">
+          <div className="md:bg-card md:text-card-foreground md:rounded-2xl md:shadow-xl md:p-8 lg:p-12">
             <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
               <div className="relative aspect-square rounded-xl overflow-hidden shadow-2xl">
                 <Image 
