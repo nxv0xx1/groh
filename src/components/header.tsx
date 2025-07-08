@@ -38,8 +38,8 @@ export function Header({ logo }: HeaderProps) {
 
   return (
     <header className={cn(
-        "sticky top-0 z-50 w-full transition-all duration-300 ease-in-out",
-        scrolled ? "border-b border-border/20 shadow-sm" : "border-b border-transparent"
+        "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out",
+        scrolled ? "border-b border-border/20 bg-background/90 backdrop-blur-sm shadow-sm" : "border-b border-transparent"
       )}>
       <div className={cn(
           "container mx-auto flex items-center justify-between transition-all duration-300 ease-in-out",
