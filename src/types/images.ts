@@ -6,6 +6,7 @@ export interface HeroImage {
 
 export interface ImageSettings {
   logo: string;
+  favicon: string;
   heroCarousel: HeroImage[];
   sponsorImage: string;
 }

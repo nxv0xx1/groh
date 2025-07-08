@@ -15,6 +15,7 @@ async function readImageData(): Promise<ImageSettings> {
     // If file doesn't exist or is invalid, return a default structure
     return {
       logo: '',
+      favicon: '',
       heroCarousel: [],
       sponsorImage: '',
     };
@@ -57,6 +58,27 @@ export async function uploadLogo(formData: FormData) {
   } catch (error) {
     console.error('Upload Logo Error:', error);
     return { error: 'An error occurred while updating the logo.' };
+  }
+}
+
+export async function updateFavicon(formData: FormData) {
+  const url = formData.get('faviconUrl') as string;
+  if (!url) {
+    return { error: 'No URL was provided.' };
+  }
+
+  try {
+    const convertedUrl = convertGoogleDriveLink(url);
+    const imageData = await readImageData();
+    imageData.favicon = convertedUrl;
+    await writeImageData(imageData);
+
+    revalidatePath('/');
+    revalidatePath('/blessingadmin');
+    return { success: 'Favicon updated successfully!', path: convertedUrl };
+  } catch (error) {
+    console.error('Update Favicon Error:', error);
+    return { error: 'An error occurred while updating the favicon.' };
   }
 }
 

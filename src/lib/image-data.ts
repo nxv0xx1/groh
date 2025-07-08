@@ -6,6 +6,7 @@ const dataFilePath = path.join(process.cwd(), 'src', 'data', 'images.json');
 
 const defaultImageData: ImageSettings = {
   logo: "",
+  favicon: "",
   heroCarousel: [
     {
       src: "https://placehold.co/1600x900.png",

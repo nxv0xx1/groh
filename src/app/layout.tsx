@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { getImageData } from "@/lib/image-data";
 
-export const metadata: Metadata = {
-  title: "G.R.O.H. | God's Righteousness Orphanage Home",
-  description: "God's Righteousness Orphanage Home - A place of belonging, healing, and hope.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { favicon } = await getImageData();
+ 
+  return {
+    title: "G.R.O.H. | God's Righteousness Orphanage Home",
+    description: "God's Righteousness Orphanage Home - A place of belonging, healing, and hope.",
+    icons: {
+      icon: favicon || undefined,
+    }
+  };
+}
 
 export default function RootLayout({
   children,

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { addHeroImage, deleteHeroImage, updateSponsorImage, uploadLogo } from '../actions';
+import { addHeroImage, deleteHeroImage, updateSponsorImage, uploadLogo, updateFavicon } from '../actions';
 import { Trash2 } from 'lucide-react';
 
 export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) {
@@ -20,6 +20,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
   const logoFormRef = useRef<HTMLFormElement>(null);
   const sponsorFormRef = useRef<HTMLFormElement>(null);
   const heroFormRef = useRef<HTMLFormElement>(null);
+  const faviconFormRef = useRef<HTMLFormElement>(null);
 
   const handleFormSubmit = (action: (formData: FormData) => Promise<any>, ref: React.RefObject<HTMLFormElement>) => {
     return (formData: FormData) => {
@@ -49,7 +50,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
   };
 
   return (
-    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-8 grid-cols-1 md:grid-cols-2">
       <Card>
         <CardHeader>
           <CardTitle>Site Logo</CardTitle>
@@ -75,6 +76,29 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
 
       <Card>
         <CardHeader>
+          <CardTitle>Site Favicon</CardTitle>
+          <CardDescription>Update the browser tab icon (favicon).</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-4">
+            {initialImages.favicon ? (
+              <Image src={initialImages.favicon} alt="Current Favicon" width={32} height={32} className="rounded-md bg-muted object-cover" />
+            ) : (
+              <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground text-xs">No Icon</div>
+            )}
+          </div>
+          <form ref={faviconFormRef} action={handleFormSubmit(updateFavicon, faviconFormRef)} className="space-y-2">
+            <Label htmlFor="favicon-url">New Favicon URL</Label>
+            <Input id="favicon-url" name="faviconUrl" type="text" required placeholder="Paste Google Drive link here" />
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Updating...' : 'Update Favicon'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Sponsor Section Image</CardTitle>
           <CardDescription>Update the image in the "Sponsor a Child" section.</CardDescription>
         </CardHeader>
@@ -92,7 +116,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
         </CardContent>
       </Card>
 
-      <Card className="md:col-span-2 lg:col-span-1">
+      <Card>
         <CardHeader>
           <CardTitle>Hero Carousel Images</CardTitle>
           <CardDescription>Add or remove images from the homepage carousel.</CardDescription>
