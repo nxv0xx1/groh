@@ -1,6 +1,6 @@
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
-import { FraudAlertBanner } from "@/components/fraud-alert-banner";
+import { FraudAlertDialog } from "@/components/fraud-alert-dialog";
 import { HeroCarousel } from "@/components/hero-carousel";
 import { AboutSection } from "@/components/about-section";
 import { SponsorSection } from "@/components/sponsor-section";
@@ -12,7 +12,7 @@ export default async function Home() {
   const { heroCarousel } = await getImageData();
   return (
     <div className="flex flex-col min-h-dvh bg-background text-foreground">
-      <FraudAlertBanner />
+      <FraudAlertDialog />
       <Header />
       <main className="flex-1">
         <HeroCarousel images={heroCarousel} />

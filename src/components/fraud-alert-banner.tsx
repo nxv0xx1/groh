@@ -1,3 +1,4 @@
+// This component is no longer used and can be deleted.
 import { AlertTriangle } from "lucide-react";
 
 export function FraudAlertBanner() {
