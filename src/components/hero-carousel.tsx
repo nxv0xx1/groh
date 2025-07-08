@@ -11,29 +11,27 @@ import {
 } from "@/components/ui/carousel"
 import { Button } from "./ui/button"
 import Link from "next/link"
+import type { HeroImage } from "@/types/images"
 
-const heroImages = [
-  {
-    src: "https://placehold.co/1600x900.png",
-    alt: "Happy children at the orphanage",
-    hint: "children smiling",
-  },
-  {
-    src: "https://placehold.co/1600x900.png",
-    alt: "The main building of the orphanage",
-    hint: "orphanage building",
-  },
-  {
-    src: "https://placehold.co/1600x900.png",
-    alt: "Children learning in a classroom",
-    hint: "kids learning",
-  },
-];
+interface HeroCarouselProps {
+  images: HeroImage[];
+}
 
-export function HeroCarousel() {
+export function HeroCarousel({ images }: HeroCarouselProps) {
   const plugin = React.useRef(
     Autoplay({ delay: 5000, stopOnInteraction: true })
   )
+
+  if (!images || images.length === 0) {
+    return (
+      <section className="relative w-full h-[70vh] md:h-[90vh] p-0 flex items-center justify-center bg-muted">
+        <div className="text-center">
+          <p>No hero images have been set.</p>
+          <p className="text-sm text-muted-foreground">An administrator can add them in the admin panel.</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="relative w-full h-[70vh] md:h-[90vh] p-0">
@@ -45,7 +43,7 @@ export function HeroCarousel() {
         opts={{ loop: true }}
       >
         <CarouselContent className="fade-in">
-          {heroImages.map((image, index) => (
+          {images.map((image, index) => (
             <CarouselItem key={index}>
               <div className="relative w-full h-[70vh] md:h-[90vh]">
                 <Image

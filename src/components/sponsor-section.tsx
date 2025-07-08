@@ -2,15 +2,17 @@ import Image from "next/image";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
+import { getImageData } from "@/lib/image-data";
 
-export function SponsorSection() {
+export async function SponsorSection() {
+  const { sponsorImage } = await getImageData();
   return (
     <section id="sponsor" className="bg-secondary">
       <div className="container mx-auto">
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
           <div className="relative aspect-square rounded-xl overflow-hidden shadow-2xl">
              <Image 
-              src="https://placehold.co/600x600.png" 
+              src={sponsorImage} 
               alt="A child smiling and ready for school" 
               fill
               className="object-cover"

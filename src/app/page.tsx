@@ -6,14 +6,16 @@ import { AboutSection } from "@/components/about-section";
 import { SponsorSection } from "@/components/sponsor-section";
 import { DonateSection } from "@/components/donate-section";
 import { ContactSection } from "@/components/contact-section";
+import { getImageData } from "@/lib/image-data";
 
-export default function Home() {
+export default async function Home() {
+  const { heroCarousel } = await getImageData();
   return (
     <div className="flex flex-col min-h-dvh bg-background text-foreground">
       <FraudAlertBanner />
       <Header />
       <main className="flex-1">
-        <HeroCarousel />
+        <HeroCarousel images={heroCarousel} />
         <AboutSection />
         <SponsorSection />
         <DonateSection />
