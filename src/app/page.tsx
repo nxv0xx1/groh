@@ -12,7 +12,7 @@ import { AnimatedSection } from "@/components/animated-section";
 export default async function Home() {
   const { heroCarousel, logo, sponsorImage, donationAmounts } = await getImageData();
   return (
-    <div className="flex flex-col min-h-dvh bg-background text-foreground">
+    <div className="flex flex-col min-h-dvh bg-secondary text-foreground">
       <FraudAlertDialog />
       <Header logo={logo} />
       <main className="flex-1">
