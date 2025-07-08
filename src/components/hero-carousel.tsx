@@ -3,11 +3,12 @@
 import * as React from "react"
 import Autoplay from "embla-carousel-autoplay"
 import Image from "next/image"
-import { Card, CardContent } from "@/components/ui/card"
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
 } from "@/components/ui/carousel"
 import { Button } from "./ui/button"
 import Link from "next/link"
@@ -59,8 +60,10 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
             </CarouselItem>
           ))}
         </CarouselContent>
+        <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-10 h-12 w-12 text-white bg-black/20 hover:bg-black/40 border-none" />
+        <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-10 h-12 w-12 text-white bg-black/20 hover:bg-black/40 border-none" />
       </Carousel>
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="container mx-auto text-center text-white p-4">
           <h1 className="font-headline text-4xl md:text-6xl lg:text-7xl font-bold drop-shadow-lg mb-4">
             A Place of Belonging, Healing, and Hope
@@ -68,7 +71,7 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
           <p className="max-w-3xl mx-auto text-lg md:text-xl text-primary-foreground/90 drop-shadow-md mb-8">
             Join us in nurturing the next generation with love, education, and faith.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pointer-events-auto">
             <Button asChild size="lg">
               <Link href="#donate">Donate Now</Link>
             </Button>
