@@ -5,6 +5,8 @@ import Image from "next/image";
 import { Button } from "./ui/button";
 import { Mountain, Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 interface HeaderProps {
   logo: string;
@@ -17,9 +19,31 @@ const navLinks = [
 ];
 
 export function Header({ logo }: HeaderProps) {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 10;
+      if (isScrolled !== scrolled) {
+        setScrolled(isScrolled);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [scrolled]);
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex h-20 items-center justify-between">
+    <header className={cn(
+        "sticky top-0 z-50 w-full transition-all duration-300 ease-in-out",
+        scrolled ? "border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm" : "border-b border-transparent"
+      )}>
+      <div className={cn(
+          "container mx-auto flex items-center justify-between transition-all duration-300 ease-in-out",
+          scrolled ? "h-20" : "h-24"
+        )}>
         
         {/* Mobile Header: Logo left, hamburger right */}
         <div className="flex w-full items-center justify-between md:hidden">
@@ -75,9 +99,9 @@ export function Header({ logo }: HeaderProps) {
         <div className="hidden w-full items-center justify-between md:flex">
             <Link href="/" className="flex items-center gap-3">
                 {logo ? (
-                    <Image src={logo} alt="G.R.O.H. Logo" width={48} height={48} className="rounded-full object-cover" />
+                    <Image src={logo} alt="G.R.O.H. Logo" width={scrolled ? 48: 56} height={scrolled ? 48 : 56} className="rounded-full object-cover transition-all duration-300 ease-in-out" />
                 ) : (
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <div className={cn("flex items-center justify-center rounded-full bg-primary text-primary-foreground transition-all duration-300 ease-in-out", scrolled ? "h-12 w-12" : "h-14 w-14")}>
                         <Mountain className="h-6 w-6" />
                     </div>
                 )}
