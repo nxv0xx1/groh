@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { addHeroImage, deleteHeroImage, updateSponsorImage, uploadLogo, updateFavicon } from '../actions';
+import { addHeroImage, deleteHeroImage, updateSponsorImage, uploadLogo, updateFavicon, updateDonationAmounts } from '../actions';
 import { Trash2 } from 'lucide-react';
 
 export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) {
@@ -21,6 +21,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
   const sponsorFormRef = useRef<HTMLFormElement>(null);
   const heroFormRef = useRef<HTMLFormElement>(null);
   const faviconFormRef = useRef<HTMLFormElement>(null);
+  const donationAmountsFormRef = useRef<HTMLFormElement>(null);
 
   const handleFormSubmit = (action: (formData: FormData) => Promise<any>, ref: React.RefObject<HTMLFormElement>) => {
     return (formData: FormData) => {
@@ -157,6 +158,30 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
           </form>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Donation Quick Select</CardTitle>
+          <CardDescription>Set the preset donation amounts (in NGN).</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form ref={donationAmountsFormRef} action={handleFormSubmit(updateDonationAmounts, donationAmountsFormRef)} className="space-y-2">
+            <Label htmlFor="donation-amounts">Amounts (comma-separated)</Label>
+            <Input 
+              id="donation-amounts" 
+              name="donationAmounts" 
+              type="text" 
+              required 
+              placeholder="e.g., 5000, 10000, 25000"
+              defaultValue={initialImages.donationAmounts?.join(', ')}
+            />
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Updating...' : 'Update Amounts'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
     </div>
   );
 }

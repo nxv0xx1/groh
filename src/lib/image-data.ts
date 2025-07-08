@@ -24,7 +24,8 @@ const defaultImageData: ImageSettings = {
       hint: "kids learning"
     }
   ],
-  sponsorImage: "https://placehold.co/600x600.png"
+  sponsorImage: "https://placehold.co/600x600.png",
+  donationAmounts: [5000, 10000, 25000, 50000],
 };
 
 export async function getImageData(): Promise<ImageSettings> {

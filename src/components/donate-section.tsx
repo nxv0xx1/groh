@@ -9,18 +9,19 @@ import { useToast } from "@/hooks/use-toast";
 import { Banknote, Check, Copy, CreditCard } from "lucide-react";
 import { usePaystackPayment } from "react-paystack";
 
-export function DonateSection() {
+export function DonateSection({ donationAmounts }: { donationAmounts: number[] }) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const accountNumber = "1220981362";
 
   const [email, setEmail] = useState("");
   const [amount, setAmount] = useState("");
+  const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
 
   const paystackConfig = {
     reference: (new Date()).getTime().toString(),
     email,
-    amount: (Number(amount) * 100), // Amount is in Kobo
+    amount: (Number(amount) * 100),
     publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
   };
 
@@ -33,6 +34,7 @@ export function DonateSection() {
     });
     setEmail("");
     setAmount("");
+    setSelectedAmount(null);
   };
 
   const onPaystackClose = () => {
@@ -55,7 +57,6 @@ export function DonateSection() {
     initializePayment({ onSuccess: onPaystackSuccess, onClose: onPaystackClose });
   };
 
-
   const handleCopy = () => {
     navigator.clipboard.writeText(accountNumber);
     setCopied(true);
@@ -65,6 +66,19 @@ export function DonateSection() {
       duration: 3000,
     });
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleQuickSelect = (quickAmount: number) => {
+    setAmount(String(quickAmount));
+    setSelectedAmount(quickAmount);
+  };
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newAmount = e.target.value;
+    setAmount(newAmount);
+    if (selectedAmount !== null && Number(newAmount) !== selectedAmount) {
+      setSelectedAmount(null);
+    }
   };
 
   return (
@@ -132,16 +146,28 @@ export function DonateSection() {
               </div>
                <div>
                 <Label htmlFor="amount">Amount (NGN)</Label>
+                 <div className="flex flex-wrap gap-2 my-2">
+                  {(donationAmounts || []).map((quickAmount) => (
+                    <Button
+                      key={quickAmount}
+                      variant={selectedAmount === quickAmount ? 'default' : 'outline'}
+                      className="flex-1 min-w-[100px]"
+                      onClick={() => handleQuickSelect(quickAmount)}
+                    >
+                      {quickAmount.toLocaleString()}
+                    </Button>
+                  ))}
+                </div>
                 <Input 
                   id="amount" 
                   type="number" 
-                  placeholder="5000" 
+                  placeholder="Or enter a custom amount" 
                   value={amount} 
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={handleAmountChange}
                   required
                 />
               </div>
-              <Button onClick={handleDonateClick} size="lg" className="w-full mt-2">
+              <Button onClick={handleDonateClick} size="lg" className="w-full mt-auto">
                 Donate with Paystack
               </Button>
             </CardContent>

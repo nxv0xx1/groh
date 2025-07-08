@@ -9,4 +9,5 @@ export interface ImageSettings {
   favicon: string;
   heroCarousel: HeroImage[];
   sponsorImage: string;
+  donationAmounts: number[];
 }

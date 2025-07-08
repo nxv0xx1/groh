@@ -18,6 +18,7 @@ async function readImageData(): Promise<ImageSettings> {
       favicon: '',
       heroCarousel: [],
       sponsorImage: '',
+      donationAmounts: [],
     };
   }
 }
@@ -146,4 +147,32 @@ export async function updateSponsorImage(formData: FormData) {
         console.error('Update Sponsor Image Error:', error);
         return { error: 'An error occurred while updating the sponsor image.' };
     }
+}
+
+export async function updateDonationAmounts(formData: FormData) {
+  const amountsStr = formData.get('donationAmounts') as string;
+  if (!amountsStr) {
+    return { error: 'No amounts were provided.' };
+  }
+
+  try {
+    const amounts = amountsStr.split(',')
+      .map(s => parseInt(s.trim(), 10))
+      .filter(n => !isNaN(n) && n > 0);
+
+    if (amounts.length === 0) {
+      return { error: 'Please provide valid, positive numbers.' };
+    }
+    
+    const imageData = await readImageData();
+    imageData.donationAmounts = amounts.sort((a, b) => a - b);
+    await writeImageData(imageData);
+
+    revalidatePath('/');
+    revalidatePath('/blessingadmin');
+    return { success: 'Donation amounts updated successfully!' };
+  } catch (error) {
+    console.error('Update Donation Amounts Error:', error);
+    return { error: 'An error occurred while updating the amounts.' };
+  }
 }

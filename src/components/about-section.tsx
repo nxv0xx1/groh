@@ -1,5 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { HeartHandshake } from "lucide-react";
+
+const values = [
+    { title: "Safe Shelter", description: "Providing a secure and loving environment for every child." },
+    { title: "Quality Education", description: "Ensuring access to education to unlock their full potential." },
+    { title: "Faith Foundation", description: "Nurturing a strong spiritual and moral compass." },
+    { title: "Love & Compassion", description: "Raising children in a caring, family-like atmosphere." },
+];
 
 export function AboutSection() {
   return (
@@ -29,24 +37,16 @@ export function AboutSection() {
                 </div>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-4">
-                  <li className="flex items-start gap-3">
-                    <span className="text-primary font-bold mt-1">&#8226;</span>
-                    <p><strong className="font-semibold">Safe Shelter:</strong> Providing a secure and loving environment for every child.</p>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-primary font-bold mt-1">&#8226;</span>
-                    <p><strong className="font-semibold">Quality Education:</strong> Ensuring access to education to unlock their full potential.</p>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-primary font-bold mt-1">&#8226;</span>
-                    <p><strong className="font-semibold">Faith Foundation:</strong> Nurturing a strong spiritual and moral compass.</p>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-primary font-bold mt-1">&#8226;</span>
-                    <p><strong className="font-semibold">Love & Compassion:</strong> Raising children in a caring, family-like atmosphere.</p>
-                  </li>
-                </ul>
+                <Accordion type="single" collapsible className="w-full">
+                  {values.map((value, index) => (
+                    <AccordionItem value={`item-${index}`} key={index}>
+                      <AccordionTrigger className="font-semibold text-left hover:no-underline">{value.title}</AccordionTrigger>
+                      <AccordionContent className="text-muted-foreground">
+                        {value.description}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
               </CardContent>
             </Card>
           </div>

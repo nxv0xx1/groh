@@ -1,6 +1,6 @@
 {
   "logo": "https://drive.google.com/uc?export=view&id=1BIpTxD-qa4ZMwtY1UV7lEOvpvKCdS_xd",
-  "favicon": "",
+  "favicon": "https://drive.google.com/uc?export=view&id=1BIpTxD-qa4ZMwtY1UV7lEOvpvKCdS_xd",
   "heroCarousel": [
     {
       "src": "https://drive.google.com/uc?export=view&id=1wUA37trq8wgZBSF1HjhbGgU7iswSStiv5A",
@@ -8,5 +8,11 @@
       "hint": ""
     }
   ],
-  "sponsorImage": "https://drive.google.com/uc?export=view&id=1Wk7J3gThIwS9-EEDN-zMm2-R-ujjziLN"
+  "sponsorImage": "https://drive.google.com/uc?export=view&id=1Wk7J3gThIwS9-EEDN-zMm2-R-ujjziLN",
+  "donationAmounts": [
+    5000,
+    10000,
+    25000,
+    50000
+  ]
 }
