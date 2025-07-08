@@ -10,20 +10,20 @@ const defaultImageData: ImageSettings = {
     {
       src: "https://placehold.co/1600x900.png",
       alt: "Happy children at the orphanage",
-      hint": "children smiling"
+      hint: "children smiling"
     },
     {
       src: "https://placehold.co/1600x900.png",
       alt: "The main building of the orphanage",
-      hint": "orphanage building"
+      hint: "orphanage building"
     },
     {
       src: "https://placehold.co/1600x900.png",
       alt: "Children learning in a classroom",
-      hint": "kids learning"
+      hint: "kids learning"
     }
   ],
-  sponsorImage": "https://placehold.co/600x600.png"
+  sponsorImage: "https://placehold.co/600x600.png"
 };
 
 export async function getImageData(): Promise<ImageSettings> {
