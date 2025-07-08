@@ -109,11 +109,12 @@ export async function addHeroImage(formData: FormData) {
 }
 
 export async function deleteHeroImage(src: string) {
-    if (src.includes('placehold.co')) {
-        return { error: 'Cannot delete placeholder images.' };
-    }
     try {
         const imageData = await readImageData();
+        if (imageData.heroCarousel.length <= 1) {
+            return { error: 'Cannot delete the last image. The carousel must have at least one image.' };
+        }
+        
         imageData.heroCarousel = imageData.heroCarousel.filter((img) => img.src !== src);
         await writeImageData(imageData);
         

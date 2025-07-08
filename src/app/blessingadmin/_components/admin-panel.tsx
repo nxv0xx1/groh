@@ -49,6 +49,8 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
     });
   };
 
+  const canDeleteHeroImages = initialImages.heroCarousel.length > 1;
+
   return (
     <div className="grid gap-8 grid-cols-1 md:grid-cols-2">
       <Card>
@@ -134,7 +136,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
                     size="icon"
                     className="w-8 h-8 text-destructive hover:bg-destructive/10"
                     onClick={() => handleDeleteHeroImage(image.src)}
-                    disabled={isPending}
+                    disabled={isPending || !canDeleteHeroImages}
                     aria-label="Delete image"
                   >
                     <Trash2 className="w-4 h-4" />
