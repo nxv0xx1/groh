@@ -4,7 +4,7 @@ export function ContactSection() {
   return (
     <section id="contact">
       <div className="container mx-auto">
-        <div className="bg-card text-card-foreground rounded-2xl shadow-xl p-8 md:p-12 lg:p-16 text-center">
+        <div className="bg-card text-card-foreground rounded-2xl shadow-xl p-6 sm:p-8 md:p-12 lg:p-16 text-center">
           <h2 className="font-headline text-4xl md:text-5xl font-bold mb-4">Get in Touch</h2>
           <p className="text-muted-foreground mb-12 max-w-2xl mx-auto text-lg">
             We would love to hear from you. Whether you have a question, want to visit, or wish to help, feel free to reach out.
