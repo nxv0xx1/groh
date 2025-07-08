@@ -1,7 +1,7 @@
 'use client';
 
 import type { ImageSettings } from '@/types/images';
-import { useState, useTransition, useRef } from 'react';
+import { useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { addHeroImage, deleteHeroImage, updateSponsorImage, uploadLogo } from '../actions';
-import { Trash2, Upload } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 
 export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) {
   const router = useRouter();
@@ -53,24 +53,21 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
       <Card>
         <CardHeader>
           <CardTitle>Site Logo</CardTitle>
-          <CardDescription>Upload a new site logo. The current logo is shown below.</CardDescription>
+          <CardDescription>Update the site logo using a Google Drive link.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-4">
             {initialImages.logo ? (
-              <Image src={initialImages.logo} alt="Current Logo" width={64} height={64} className="rounded-full bg-muted" />
+              <Image src={initialImages.logo} alt="Current Logo" width={64} height={64} className="rounded-full bg-muted object-cover" />
             ) : (
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-xs">No Logo</div>
             )}
-            <p className="text-sm text-muted-foreground flex-1">
-              {initialImages.logo ? `Current: ${initialImages.logo}` : 'No logo set.'}
-            </p>
           </div>
           <form ref={logoFormRef} action={handleFormSubmit(uploadLogo, logoFormRef)} className="space-y-2">
-            <Label htmlFor="logo-upload">New Logo File</Label>
-            <Input id="logo-upload" name="logo" type="file" required accept="image/*" />
+            <Label htmlFor="logo-url">New Logo URL</Label>
+            <Input id="logo-url" name="logoUrl" type="text" required placeholder="Paste Google Drive link here" />
             <Button type="submit" disabled={isPending}>
-              {isPending ? 'Uploading...' : 'Upload Logo'}
+              {isPending ? 'Updating...' : 'Update Logo'}
             </Button>
           </form>
         </CardContent>
@@ -86,10 +83,10 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
             <Image src={initialImages.sponsorImage} alt="Current Sponsor Image" fill className="object-cover rounded-md" />
           </div>
           <form ref={sponsorFormRef} action={handleFormSubmit(updateSponsorImage, sponsorFormRef)} className="space-y-2">
-            <Label htmlFor="sponsor-upload">New Sponsor Image</Label>
-            <Input id="sponsor-upload" name="sponsorImage" type="file" required accept="image/*" />
+            <Label htmlFor="sponsor-url">New Sponsor Image URL</Label>
+            <Input id="sponsor-url" name="sponsorImageUrl" type="text" required placeholder="Paste Google Drive link here" />
             <Button type="submit" disabled={isPending}>
-              {isPending ? 'Uploading...' : 'Update Sponsor Image'}
+              {isPending ? 'Updating...' : 'Update Sponsor Image'}
             </Button>
           </form>
         </CardContent>
@@ -103,11 +100,11 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
         <CardContent className="space-y-6">
           <div>
             <h4 className="font-semibold mb-2">Current Images</h4>
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
               {initialImages.heroCarousel.map((image, index) => (
                 <div key={index} className="flex items-center gap-2 text-sm p-1 rounded-md bg-muted/50">
                   <Image src={image.src} alt={image.alt} width={40} height={40} className="object-cover rounded" />
-                  <span className="truncate flex-1" title={image.src}>{image.alt}</span>
+                  <span className="truncate flex-1" title={image.alt}>{image.alt}</span>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -124,12 +121,11 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
           </div>
           <form ref={heroFormRef} action={handleFormSubmit(addHeroImage, heroFormRef)} className="space-y-2 border-t pt-4">
             <h4 className="font-semibold">Add New Image</h4>
-            <Label htmlFor="hero-upload">Image File</Label>
-            <Input id="hero-upload" name="heroImage" type="file" required accept="image/*" />
+            <Label htmlFor="hero-url">Image URL</Label>
+            <Input id="hero-url" name="heroImageUrl" type="text" required placeholder="Paste Google Drive link here" />
             <Label htmlFor="hero-alt">Alternative Text</Label>
             <Input id="hero-alt" name="altText" type="text" required placeholder="e.g., Children playing outside" />
             <Button type="submit" disabled={isPending}>
-              <Upload className="mr-2 h-4 w-4" />
               {isPending ? 'Adding...' : 'Add to Carousel'}
             </Button>
           </form>

@@ -1,12 +1,11 @@
 'use server';
 
-import { writeFile, readFile, mkdir, unlink } from 'fs/promises';
+import { writeFile, readFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { revalidatePath } from 'next/cache';
 import type { ImageSettings } from '@/types/images';
 
 const dataFilePath = path.join(process.cwd(), 'src', 'data', 'images.json');
-const uploadDir = path.join(process.cwd(), 'public', 'uploads');
 
 async function readImageData(): Promise<ImageSettings> {
   try {
@@ -27,61 +26,60 @@ async function writeImageData(data: ImageSettings) {
   await writeFile(dataFilePath, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-async function saveFile(file: File): Promise<string> {
-    await mkdir(uploadDir, { recursive: true });
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const filename = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
-    const filePath = path.join(uploadDir, filename);
-    
-    await writeFile(filePath, buffer);
-    
-    return `/uploads/${filename}`;
+function convertGoogleDriveLink(url: string): string {
+    if (!url || !url.includes('drive.google.com')) {
+      return url; 
+    }
+    const regex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
+    const match = url.match(regex);
+    if (match && match[1]) {
+      const fileId = match[1];
+      return `https://drive.google.com/uc?export=view&id=${fileId}`;
+    }
+    return url;
 }
 
 export async function uploadLogo(formData: FormData) {
-  const file = formData.get('logo') as File;
-  if (!file || file.size === 0) {
-    return { error: 'No file was selected.' };
+  const url = formData.get('logoUrl') as string;
+  if (!url) {
+    return { error: 'No URL was provided.' };
   }
 
   try {
-    const publicPath = await saveFile(file);
+    const convertedUrl = convertGoogleDriveLink(url);
     const imageData = await readImageData();
-    imageData.logo = publicPath;
+    imageData.logo = convertedUrl;
     await writeImageData(imageData);
 
     revalidatePath('/');
     revalidatePath('/blessingadmin');
-    return { success: 'Logo updated successfully!', path: publicPath };
+    return { success: 'Logo updated successfully!', path: convertedUrl };
   } catch (error) {
     console.error('Upload Logo Error:', error);
-    return { error: 'An error occurred while uploading the logo.' };
+    return { error: 'An error occurred while updating the logo.' };
   }
 }
 
 export async function addHeroImage(formData: FormData) {
-  const file = formData.get('heroImage') as File;
+  const url = formData.get('heroImageUrl') as string;
   const alt = formData.get('altText') as string;
 
-  if (!file || file.size === 0) {
-    return { error: 'No file was selected.' };
+  if (!url) {
+    return { error: 'No URL was provided.' };
   }
   if (!alt) {
     return { error: 'Alternative text is required.' };
   }
 
   try {
-    const publicPath = await saveFile(file);
+    const convertedUrl = convertGoogleDriveLink(url);
     const imageData = await readImageData();
-    imageData.heroCarousel.push({ src: publicPath, alt, hint: '' });
+    imageData.heroCarousel.push({ src: convertedUrl, alt, hint: '' });
     await writeImageData(imageData);
 
     revalidatePath('/');
     revalidatePath('/blessingadmin');
-    return { success: 'Hero image added successfully!', path: publicPath };
+    return { success: 'Hero image added successfully!', path: convertedUrl };
   } catch (error) {
     console.error('Add Hero Image Error:', error);
     return { error: 'An error occurred while adding the hero image.' };
@@ -89,16 +87,13 @@ export async function addHeroImage(formData: FormData) {
 }
 
 export async function deleteHeroImage(src: string) {
-    if (!src.startsWith('/uploads/')) {
+    if (src.includes('placehold.co')) {
         return { error: 'Cannot delete placeholder images.' };
     }
     try {
         const imageData = await readImageData();
         imageData.heroCarousel = imageData.heroCarousel.filter((img) => img.src !== src);
         await writeImageData(imageData);
-        
-        const filePath = path.join(process.cwd(), 'public', src);
-        await unlink(filePath).catch(err => console.error(`Failed to delete file: ${src}`, err));
         
         revalidatePath('/');
         revalidatePath('/blessingadmin');
@@ -110,20 +105,20 @@ export async function deleteHeroImage(src: string) {
 }
 
 export async function updateSponsorImage(formData: FormData) {
-    const file = formData.get('sponsorImage') as File;
-    if (!file || file.size === 0) {
-        return { error: 'No file was selected.' };
+    const url = formData.get('sponsorImageUrl') as string;
+    if (!url) {
+        return { error: 'No URL was provided.' };
     }
 
     try {
-        const publicPath = await saveFile(file);
+        const convertedUrl = convertGoogleDriveLink(url);
         const imageData = await readImageData();
-        imageData.sponsorImage = publicPath;
+        imageData.sponsorImage = convertedUrl;
         await writeImageData(imageData);
 
         revalidatePath('/');
         revalidatePath('/blessingadmin');
-        return { success: 'Sponsor image updated successfully!', path: publicPath };
+        return { success: 'Sponsor image updated successfully!', path: convertedUrl };
     } catch (error) {
         console.error('Update Sponsor Image Error:', error);
         return { error: 'An error occurred while updating the sponsor image.' };
