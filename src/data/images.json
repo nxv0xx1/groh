@@ -19,5 +19,27 @@
     10000,
     25000,
     50000
+  ],
+  "galleryImages": [
+    {
+      "src": "https://drive.google.com/uc?export=view&id=1wUA37trq8wgZBSF1HjhbGgU7iswSStiv5A",
+      "alt": "Children eating together",
+      "hint": "children eating"
+    },
+    {
+      "src": "https://drive.google.com/uc?export=view&id=1Wk7J3gThIwS9-EEDN-zMm2-R-ujjziLN",
+      "alt": "Group photo of smiling children",
+      "hint": "children smiling"
+    },
+    {
+      "src": "https://drive.google.com/uc?export=view&id=1wWlV5qj9j-1v3bXy_Z8k_8sFqBqC8mF3",
+      "alt": "Child playing with a toy",
+      "hint": "child playing"
+    },
+    {
+      "src": "https://drive.google.com/uc?export=view&id=1sCgR_B6pE0tZlD7rY6nJ_fGk_oWpI_hN",
+      "alt": "Classroom with children learning",
+      "hint": "children learning"
+    }
   ]
 }

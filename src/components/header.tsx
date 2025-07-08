@@ -13,9 +13,10 @@ interface HeaderProps {
 }
 
 const navLinks = [
-    { href: "#about", label: "About" },
-    { href: "#sponsor", label: "Sponsor" },
-    { href: "#contact", label: "Contact" },
+    { href: "/gallery", label: "Gallery" },
+    { href: "/#about", label: "About" },
+    { href: "/#sponsor", label: "Sponsor" },
+    { href: "/#contact", label: "Contact" },
 ];
 
 export function Header({ logo }: HeaderProps) {
@@ -38,7 +39,7 @@ export function Header({ logo }: HeaderProps) {
   return (
     <header className={cn(
         "sticky top-0 z-50 w-full transition-all duration-300 ease-in-out",
-        scrolled ? "border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm" : "border-b border-transparent"
+        scrolled ? "border-b bg-background/95 shadow-sm" : "border-b border-transparent"
       )}>
       <div className={cn(
           "container mx-auto flex items-center justify-between transition-all duration-300 ease-in-out",
@@ -86,7 +87,7 @@ export function Header({ logo }: HeaderProps) {
                         <div className="mt-auto p-6">
                             <SheetClose asChild>
                                 <Button asChild className="w-full">
-                                    <Link href="#donate">Donate Now</Link>
+                                    <Link href="/#donate">Donate Now</Link>
                                 </Button>
                             </SheetClose>
                         </div>
@@ -115,7 +116,7 @@ export function Header({ logo }: HeaderProps) {
                     </Link>
                 ))}
                 <Button asChild>
-                    <Link href="#donate">Donate Now</Link>
+                    <Link href="/#donate">Donate Now</Link>
                 </Button>
             </nav>
         </div>

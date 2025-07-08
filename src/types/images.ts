@@ -10,4 +10,5 @@ export interface ImageSettings {
   heroCarousel: HeroImage[];
   sponsorImage: string;
   donationAmounts: number[];
+  galleryImages: HeroImage[];
 }

@@ -19,6 +19,7 @@ async function readImageData(): Promise<ImageSettings> {
       heroCarousel: [],
       sponsorImage: '',
       donationAmounts: [],
+      galleryImages: [],
     };
   }
 }
@@ -41,6 +42,12 @@ function convertGoogleDriveLink(url: string): string {
     return url;
 }
 
+function revalidateAll() {
+  revalidatePath('/');
+  revalidatePath('/blessingadmin');
+  revalidatePath('/gallery');
+}
+
 export async function uploadLogo(formData: FormData) {
   const url = formData.get('logoUrl') as string;
   if (!url) {
@@ -53,8 +60,7 @@ export async function uploadLogo(formData: FormData) {
     imageData.logo = convertedUrl;
     await writeImageData(imageData);
 
-    revalidatePath('/');
-    revalidatePath('/blessingadmin');
+    revalidateAll();
     return { success: 'Logo updated successfully!', path: convertedUrl };
   } catch (error) {
     console.error('Upload Logo Error:', error);
@@ -74,8 +80,7 @@ export async function updateFavicon(formData: FormData) {
     imageData.favicon = convertedUrl;
     await writeImageData(imageData);
 
-    revalidatePath('/');
-    revalidatePath('/blessingadmin');
+    revalidateAll();
     return { success: 'Favicon updated successfully!', path: convertedUrl };
   } catch (error) {
     console.error('Update Favicon Error:', error);
@@ -100,8 +105,7 @@ export async function addHeroImage(formData: FormData) {
     imageData.heroCarousel.push({ src: convertedUrl, alt, hint: '' });
     await writeImageData(imageData);
 
-    revalidatePath('/');
-    revalidatePath('/blessingadmin');
+    revalidateAll();
     return { success: 'Hero image added successfully!', path: convertedUrl };
   } catch (error) {
     console.error('Add Hero Image Error:', error);
@@ -119,8 +123,7 @@ export async function deleteHeroImage(src: string) {
         imageData.heroCarousel = imageData.heroCarousel.filter((img) => img.src !== src);
         await writeImageData(imageData);
         
-        revalidatePath('/');
-        revalidatePath('/blessingadmin');
+        revalidateAll();
         return { success: 'Hero image deleted successfully.' };
     } catch(error) {
         console.error('Delete Hero Image Error:', error);
@@ -140,8 +143,7 @@ export async function updateSponsorImage(formData: FormData) {
         imageData.sponsorImage = convertedUrl;
         await writeImageData(imageData);
 
-        revalidatePath('/');
-        revalidatePath('/blessingadmin');
+        revalidateAll();
         return { success: 'Sponsor image updated successfully!', path: convertedUrl };
     } catch (error) {
         console.error('Update Sponsor Image Error:', error);
@@ -168,11 +170,52 @@ export async function updateDonationAmounts(formData: FormData) {
     imageData.donationAmounts = amounts.sort((a, b) => a - b);
     await writeImageData(imageData);
 
-    revalidatePath('/');
-    revalidatePath('/blessingadmin');
+    revalidateAll();
     return { success: 'Donation amounts updated successfully!' };
   } catch (error) {
     console.error('Update Donation Amounts Error:', error);
     return { error: 'An error occurred while updating the amounts.' };
   }
+}
+
+export async function addGalleryImage(formData: FormData) {
+  const url = formData.get('galleryImageUrl') as string;
+  const alt = formData.get('altText') as string;
+
+  if (!url) {
+    return { error: 'No URL was provided.' };
+  }
+  if (!alt) {
+    return { error: 'Alternative text is required.' };
+  }
+
+  try {
+    const convertedUrl = convertGoogleDriveLink(url);
+    const imageData = await readImageData();
+    if (!imageData.galleryImages) {
+        imageData.galleryImages = [];
+    }
+    imageData.galleryImages.push({ src: convertedUrl, alt, hint: '' });
+    await writeImageData(imageData);
+
+    revalidateAll();
+    return { success: 'Gallery image added successfully!', path: convertedUrl };
+  } catch (error) {
+    console.error('Add Gallery Image Error:', error);
+    return { error: 'An error occurred while adding the gallery image.' };
+  }
+}
+
+export async function deleteGalleryImage(src: string) {
+    try {
+        const imageData = await readImageData();
+        imageData.galleryImages = imageData.galleryImages.filter((img) => img.src !== src);
+        await writeImageData(imageData);
+        
+        revalidateAll();
+        return { success: 'Gallery image deleted successfully.' };
+    } catch(error) {
+        console.error('Delete Gallery Image Error:', error);
+        return { error: 'An error occurred while deleting the gallery image.' };
+    }
 }

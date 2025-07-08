@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { addHeroImage, deleteHeroImage, updateSponsorImage, uploadLogo, updateFavicon, updateDonationAmounts } from '../actions';
+import { addHeroImage, deleteHeroImage, updateSponsorImage, uploadLogo, updateFavicon, updateDonationAmounts, addGalleryImage, deleteGalleryImage } from '../actions';
 import { Trash2 } from 'lucide-react';
 
 export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) {
@@ -22,6 +22,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
   const heroFormRef = useRef<HTMLFormElement>(null);
   const faviconFormRef = useRef<HTMLFormElement>(null);
   const donationAmountsFormRef = useRef<HTMLFormElement>(null);
+  const galleryFormRef = useRef<HTMLFormElement>(null);
 
   const handleFormSubmit = (action: (formData: FormData) => Promise<any>, ref: React.RefObject<HTMLFormElement>) => {
     return (formData: FormData) => {
@@ -50,10 +51,22 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
     });
   };
 
+  const handleDeleteGalleryImage = (src: string) => {
+    startTransition(async () => {
+      const result = await deleteGalleryImage(src);
+      if (result?.error) {
+        toast({ variant: 'destructive', title: 'Error', description: result.error });
+      } else {
+        toast({ title: 'Success!', description: 'Gallery image deleted.' });
+        router.refresh();
+      }
+    });
+  };
+
   const canDeleteHeroImages = initialImages.heroCarousel.length > 1;
 
   return (
-    <div className="grid gap-8 grid-cols-1 md:grid-cols-2">
+    <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
       <Card>
         <CardHeader>
           <CardTitle>Site Logo</CardTitle>
@@ -158,6 +171,51 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
           </form>
         </CardContent>
       </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Gallery Images</CardTitle>
+          <CardDescription>Add or remove images from the gallery page.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div>
+            <h4 className="font-semibold mb-2">Current Images</h4>
+            <div className="space-y-2 max-h-60 overflow-y-auto pr-2 grid grid-cols-3 gap-2">
+              {(initialImages.galleryImages || []).map((image, index) => (
+                <div key={index} className="relative group aspect-square">
+                  <Image src={image.src} alt={image.alt} fill className="object-cover rounded-md" />
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="w-10 h-10"
+                      onClick={() => handleDeleteGalleryImage(image.src)}
+                      disabled={isPending}
+                      aria-label="Delete image"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {(!initialImages.galleryImages || initialImages.galleryImages.length === 0) && (
+              <p className="text-sm text-muted-foreground mt-2">No gallery images yet.</p>
+            )}
+          </div>
+          <form ref={galleryFormRef} action={handleFormSubmit(addGalleryImage, galleryFormRef)} className="space-y-2 border-t pt-4">
+            <h4 className="font-semibold">Add New Image</h4>
+            <Label htmlFor="gallery-url">Image URL</Label>
+            <Input id="gallery-url" name="galleryImageUrl" type="text" required placeholder="Paste Google Drive link here" />
+            <Label htmlFor="gallery-alt">Alternative Text</Label>
+            <Input id="gallery-alt" name="altText" type="text" required placeholder="e.g., Children playing outside" />
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Adding...' : 'Add to Gallery'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
 
       <Card>
         <CardHeader>
