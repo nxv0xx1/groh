@@ -1,26 +1,6 @@
-import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
-import { TikTokIcon } from "./icons/tiktok-icon";
-import Link from "next/link";
+import { Mail, MapPin, Phone } from "lucide-react";
 
 export function ContactSection() {
-  const socialLinks = [
-    {
-      href: "https://www.facebook.com/profile.php?id=100078909491799",
-      icon: <Facebook className="w-6 h-6" />,
-      name: "Facebook",
-    },
-    {
-      href: "https://www.instagram.com/godsrighteousnessorphanagehome/",
-      icon: <Instagram className="w-6 h-6" />,
-      name: "Instagram",
-    },
-    {
-      href: "https://www.tiktok.com/@groh_orphanage",
-      icon: <TikTokIcon className="w-6 h-6 fill-current" />,
-      name: "TikTok",
-    },
-  ];
-
   return (
     <section id="contact" className="bg-secondary">
       <div className="container mx-auto text-center">
@@ -51,17 +31,6 @@ export function ContactSection() {
             </div>
             <h3 className="font-headline text-2xl font-semibold mb-2">Address</h3>
             <p>Avuonkwu Olokoro, Umuahia South L.G.A., Abia State, Nigeria</p>
-          </div>
-        </div>
-        <div className="mt-16">
-          <h3 className="font-headline text-2xl font-semibold mb-4">Follow Our Journey</h3>
-          <div className="flex justify-center gap-6">
-            {socialLinks.map((link) => (
-              <Link key={link.name} href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.name}
-                className="text-muted-foreground hover:text-primary transition-colors duration-300">
-                {link.icon}
-              </Link>
-            ))}
           </div>
         </div>
       </div>
