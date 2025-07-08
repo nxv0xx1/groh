@@ -84,7 +84,7 @@ export function DonateSection({ donationAmounts }: { donationAmounts: number[] }
   return (
     <section id="donate">
       <div className="container mx-auto">
-        <div className="bg-card text-card-foreground rounded-2xl shadow-xl p-6 sm:p-8 md:p-12 lg:p-16">
+        <div className="bg-card text-card-foreground rounded-2xl shadow-xl p-4 md:p-8 lg:p-12">
           <div className="text-center mb-12">
             <h2 className="font-headline text-4xl md:text-5xl font-bold mb-4">Make a Donation</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto text-lg">

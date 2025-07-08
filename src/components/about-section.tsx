@@ -13,7 +13,7 @@ export function AboutSection() {
   return (
     <section id="about">
       <div className="container mx-auto">
-        <div className="bg-card text-card-foreground rounded-2xl shadow-xl p-6 sm:p-8 md:p-12 lg:p-16">
+        <div className="bg-card text-card-foreground rounded-2xl shadow-xl p-4 md:p-8 lg:p-12">
           <div className="grid md:grid-cols-12 gap-8 items-center">
             <div className="md:col-span-12 lg:col-span-6">
               <h2 className="font-headline text-4xl md:text-5xl font-bold mb-4">
