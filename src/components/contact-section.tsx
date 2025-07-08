@@ -23,8 +23,7 @@ export function ContactSection() {
                 <Mail className="w-8 h-8" />
               </div>
               <h3 className="font-headline text-2xl font-semibold mb-2">Email</h3>
-              <p className="text-muted-foreground italic">groh.orphanage@email.com</p>
-              <p className="text-sm text-muted-foreground">(Placeholder)</p>
+              <a href="mailto:grohorphanage.ng@gmail.com" className="hover:text-primary">grohorphanage.ng@gmail.com</a>
             </div>
             <div className="flex flex-col items-center text-center">
               <div className="bg-primary/20 text-primary rounded-full p-4 mb-4">
