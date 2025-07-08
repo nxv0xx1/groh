@@ -3,14 +3,58 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Banknote, Check, Copy, CreditCard } from "lucide-react";
-import Link from "next/link";
+import { usePaystackPayment } from "react-paystack";
 
 export function DonateSection() {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const accountNumber = "1220981362";
+
+  const [email, setEmail] = useState("");
+  const [amount, setAmount] = useState("");
+
+  const paystackConfig = {
+    reference: (new Date()).getTime().toString(),
+    email,
+    amount: (Number(amount) * 100), // Amount is in Kobo
+    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "",
+  };
+
+  const initializePayment = usePaystackPayment(paystackConfig);
+
+  const onPaystackSuccess = (reference: any) => {
+    toast({
+      title: "Donation Successful!",
+      description: `Thank you for your generosity. Transaction reference: ${reference.reference}`,
+    });
+    setEmail("");
+    setAmount("");
+  };
+
+  const onPaystackClose = () => {
+    toast({
+      variant: "destructive",
+      title: "Payment window closed.",
+      description: "The payment process was cancelled.",
+    });
+  };
+
+  const handleDonateClick = () => {
+    if (!email || !amount || Number(amount) <= 0) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Input",
+        description: "Please enter a valid email and donation amount.",
+      });
+      return;
+    }
+    initializePayment({ onSuccess: onPaystackSuccess, onClose: onPaystackClose });
+  };
+
 
   const handleCopy = () => {
     navigator.clipboard.writeText(accountNumber);
@@ -74,10 +118,31 @@ export function DonateSection() {
                 Use Paystack for secure online donations from anywhere.
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex-grow flex flex-col items-center justify-center text-center">
-              <p className="text-muted-foreground mb-6">Click the button below to donate securely online.</p>
-              <Button asChild size="lg" className="w-full md:w-auto">
-                <Link href="#" target="_blank" rel="noopener noreferrer">Donate with Paystack</Link>
+            <CardContent className="flex-grow flex flex-col space-y-4">
+              <div>
+                <Label htmlFor="email">Email Address</Label>
+                <Input 
+                  id="email" 
+                  type="email" 
+                  placeholder="me@example.com" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+               <div>
+                <Label htmlFor="amount">Amount (NGN)</Label>
+                <Input 
+                  id="amount" 
+                  type="number" 
+                  placeholder="5000" 
+                  value={amount} 
+                  onChange={(e) => setAmount(e.target.value)}
+                  required
+                />
+              </div>
+              <Button onClick={handleDonateClick} size="lg" className="w-full mt-2">
+                Donate with Paystack
               </Button>
             </CardContent>
           </Card>
