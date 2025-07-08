@@ -9,11 +9,11 @@ import { ContactSection } from "@/components/contact-section";
 import { getImageData } from "@/lib/image-data";
 
 export default async function Home() {
-  const { heroCarousel } = await getImageData();
+  const { heroCarousel, logo } = await getImageData();
   return (
     <div className="flex flex-col min-h-dvh bg-background text-foreground">
       <FraudAlertDialog />
-      <Header />
+      <Header logo={logo} />
       <main className="flex-1">
         <HeroCarousel images={heroCarousel} />
         <AboutSection />
