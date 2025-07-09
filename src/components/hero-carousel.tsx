@@ -75,7 +75,7 @@ export function HeroCarousel({ images }: HeroCarouselProps) {
             <Button asChild size="lg">
               <Link href="#donate">Donate Now</Link>
             </Button>
-            <Button asChild size="lg" variant="secondary">
+            <Button asChild size="lg" variant="outline" className="bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10">
               <Link href="#sponsor">Sponsor a Child</Link>
             </Button>
           </div>

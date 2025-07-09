@@ -39,7 +39,9 @@ export function Header({ logo }: HeaderProps) {
   return (
     <header className={cn(
         "fixed top-0 z-50 w-full transition-all duration-300 ease-in-out",
-        scrolled ? "border-b border-border/20 bg-background/90 backdrop-blur-sm shadow-sm" : "border-b border-transparent"
+        scrolled 
+          ? "border-b border-border/20 bg-background/90 backdrop-blur-sm shadow-sm" 
+          : "border-b border-transparent text-primary-foreground"
       )}>
       <div className={cn(
           "container mx-auto flex items-center justify-between transition-all duration-300 ease-in-out",
@@ -111,7 +113,10 @@ export function Header({ logo }: HeaderProps) {
 
             <nav className="flex items-center gap-6 text-sm font-medium">
                 {navLinks.map((link) => (
-                    <Link key={link.href} href={link.href} className="text-muted-foreground transition-colors hover:text-foreground">
+                    <Link key={link.href} href={link.href} className={cn(
+                        "transition-colors",
+                        scrolled ? "text-muted-foreground hover:text-foreground" : "hover:text-primary-foreground/80"
+                    )}>
                         {link.label}
                     </Link>
                 ))}
