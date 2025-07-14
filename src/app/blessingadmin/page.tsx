@@ -16,15 +16,9 @@ export default async function AdminPage() {
           <div className='flex items-start'>
             <AlertCircle className="h-5 w-5 mr-3 mt-0.5 text-primary flex-shrink-0" />
             <div>
-              <h3 className="font-bold">How to Use Google Drive for Images</h3>
-              <ol className="list-decimal list-inside text-sm space-y-1 mt-2">
-                <li>Upload your image to Google Drive.</li>
-                <li>Right-click the file and select <strong>Share</strong> &gt; <strong>Share</strong>.</li>
-                <li>Under "General access", change "Restricted" to <strong>"Anyone with the link"</strong>.</li>
-                <li>Click <strong>"Copy link"</strong> and paste it into the appropriate field below.</li>
-              </ol>
+              <h3 className="font-bold">Image Upload Instructions</h3>
               <p className="text-sm mt-2">
-                The system will automatically convert the link for display on the website.
+                Use the forms below to upload images directly. The system will automatically handle storage and link them to your site.
               </p>
             </div>
           </div>

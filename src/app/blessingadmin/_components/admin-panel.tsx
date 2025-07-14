@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { addHeroImage, deleteHeroImage, updateSponsorImage, uploadLogo, updateFavicon, updateDonationAmounts, addGalleryImage, deleteGalleryImage } from '../actions';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Upload } from 'lucide-react';
 
 export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) {
   const router = useRouter();
@@ -26,6 +26,13 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
 
   const handleFormSubmit = (action: (formData: FormData) => Promise<any>, ref: React.RefObject<HTMLFormElement>) => {
     return (formData: FormData) => {
+      // Check if file input is empty for forms that require it
+      const fileInput = ref.current?.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput && fileInput.files?.length === 0) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Please select a file to upload.' });
+        return;
+      }
+
       startTransition(async () => {
         const result = await action(formData);
         if (result?.error) {
@@ -70,7 +77,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
       <Card>
         <CardHeader>
           <CardTitle>Site Logo</CardTitle>
-          <CardDescription>Update the site logo using a Google Drive link.</CardDescription>
+          <CardDescription>Upload a new site logo.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-4">
@@ -81,10 +88,10 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
             )}
           </div>
           <form ref={logoFormRef} action={handleFormSubmit(uploadLogo, logoFormRef)} className="space-y-2">
-            <Label htmlFor="logo-url">New Logo URL</Label>
-            <Input id="logo-url" name="logoUrl" type="text" required placeholder="Paste Google Drive link here" />
+            <Label htmlFor="logoFile">New Logo File</Label>
+            <Input id="logoFile" name="logoFile" type="file" required accept="image/*" />
             <Button type="submit" disabled={isPending}>
-              {isPending ? 'Updating...' : 'Update Logo'}
+              {isPending ? 'Uploading...' : <><Upload className="mr-2 h-4 w-4" /> Update Logo</>}
             </Button>
           </form>
         </CardContent>
@@ -104,10 +111,10 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
             )}
           </div>
           <form ref={faviconFormRef} action={handleFormSubmit(updateFavicon, faviconFormRef)} className="space-y-2">
-            <Label htmlFor="favicon-url">New Favicon URL</Label>
-            <Input id="favicon-url" name="faviconUrl" type="text" required placeholder="Paste Google Drive link here" />
+            <Label htmlFor="faviconFile">New Favicon File</Label>
+            <Input id="faviconFile" name="faviconFile" type="file" required accept="image/png, image/x-icon, image/svg+xml" />
             <Button type="submit" disabled={isPending}>
-              {isPending ? 'Updating...' : 'Update Favicon'}
+              {isPending ? 'Uploading...' : <><Upload className="mr-2 h-4 w-4" /> Update Favicon</>}
             </Button>
           </form>
         </CardContent>
@@ -120,13 +127,17 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="relative aspect-video w-full">
-            <Image src={initialImages.sponsorImage} alt="Current Sponsor Image" fill className="object-cover rounded-md" />
+            {initialImages.sponsorImage ? (
+                <Image src={initialImages.sponsorImage} alt="Current Sponsor Image" fill className="object-cover rounded-md" />
+            ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-sm rounded-md">No Image</div>
+            )}
           </div>
           <form ref={sponsorFormRef} action={handleFormSubmit(updateSponsorImage, sponsorFormRef)} className="space-y-2">
-            <Label htmlFor="sponsor-url">New Sponsor Image URL</Label>
-            <Input id="sponsor-url" name="sponsorImageUrl" type="text" required placeholder="Paste Google Drive link here" />
+            <Label htmlFor="sponsorImageFile">New Sponsor Image</Label>
+            <Input id="sponsorImageFile" name="sponsorImageFile" type="file" required accept="image/*" />
             <Button type="submit" disabled={isPending}>
-              {isPending ? 'Updating...' : 'Update Sponsor Image'}
+              {isPending ? 'Uploading...' : <><Upload className="mr-2 h-4 w-4" /> Update Image</>}
             </Button>
           </form>
         </CardContent>
@@ -161,12 +172,12 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
           </div>
           <form ref={heroFormRef} action={handleFormSubmit(addHeroImage, heroFormRef)} className="space-y-2 border-t pt-4">
             <h4 className="font-semibold">Add New Image</h4>
-            <Label htmlFor="hero-url">Image URL</Label>
-            <Input id="hero-url" name="heroImageUrl" type="text" required placeholder="Paste Google Drive link here" />
+            <Label htmlFor="heroImageFile">Image File</Label>
+            <Input id="heroImageFile" name="heroImageFile" type="file" required accept="image/*" />
             <Label htmlFor="hero-alt">Alternative Text</Label>
             <Input id="hero-alt" name="altText" type="text" required placeholder="e.g., Children playing outside" />
             <Button type="submit" disabled={isPending}>
-              {isPending ? 'Adding...' : 'Add to Carousel'}
+              {isPending ? 'Adding...' : <><Upload className="mr-2 h-4 w-4" /> Add to Carousel</>}
             </Button>
           </form>
         </CardContent>
@@ -205,12 +216,12 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
           </div>
           <form ref={galleryFormRef} action={handleFormSubmit(addGalleryImage, galleryFormRef)} className="space-y-2 border-t pt-4">
             <h4 className="font-semibold">Add New Image</h4>
-            <Label htmlFor="gallery-url">Image URL</Label>
-            <Input id="gallery-url" name="galleryImageUrl" type="text" required placeholder="Paste Google Drive link here" />
+            <Label htmlFor="galleryImageFile">Image File</Label>
+            <Input id="galleryImageFile" name="galleryImageFile" type="file" required accept="image/*" />
             <Label htmlFor="gallery-alt">Alternative Text</Label>
             <Input id="gallery-alt" name="altText" type="text" required placeholder="e.g., Children playing outside" />
             <Button type="submit" disabled={isPending}>
-              {isPending ? 'Adding...' : 'Add to Gallery'}
+              {isPending ? 'Adding...' : <><Upload className="mr-2 h-4 w-4" /> Add to Gallery</>}
             </Button>
           </form>
         </CardContent>

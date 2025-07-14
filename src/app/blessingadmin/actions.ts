@@ -4,6 +4,7 @@ import { writeFile, readFile, mkdir } from 'fs/promises';
 import path from 'path';
 import { revalidatePath } from 'next/cache';
 import type { ImageSettings } from '@/types/images';
+import { put, del } from '@vercel/blob';
 
 const dataFilePath = path.join(process.cwd(), 'src', 'data', 'images.json');
 
@@ -12,7 +13,6 @@ async function readImageData(): Promise<ImageSettings> {
     const fileContent = await readFile(dataFilePath, 'utf-8');
     return JSON.parse(fileContent);
   } catch (error) {
-    // If file doesn't exist or is invalid, return a default structure
     return {
       logo: '',
       favicon: '',
@@ -29,87 +29,104 @@ async function writeImageData(data: ImageSettings) {
   await writeFile(dataFilePath, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-function convertGoogleDriveLink(url: string): string {
-    if (!url || !url.includes('drive.google.com')) {
-      return url; 
-    }
-    const regex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
-    const match = url.match(regex);
-    if (match && match[1]) {
-      const fileId = match[1];
-      return `https://drive.google.com/uc?export=view&id=${fileId}`;
-    }
-    return url;
-}
-
 function revalidateAll() {
   revalidatePath('/');
   revalidatePath('/blessingadmin');
   revalidatePath('/gallery');
 }
 
+async function uploadFile(file: File, folder: string): Promise<string> {
+    if (!file || file.size === 0) {
+        throw new Error('No file was provided or the file is empty.');
+    }
+    const blob = await put(`${folder}/${file.name}`, file, {
+        access: 'public',
+    });
+    return blob.url;
+}
+
+async function deleteFile(url: string): Promise<void> {
+    if (!url) return;
+    try {
+        await del(url);
+    } catch (error) {
+        // Log the error but don't block the operation
+        console.warn(`Could not delete file from blob storage: ${url}`, error);
+    }
+}
+
+
 export async function uploadLogo(formData: FormData) {
-  const url = formData.get('logoUrl') as string;
-  if (!url) {
-    return { error: 'No URL was provided.' };
+  const file = formData.get('logoFile') as File;
+  if (!file) {
+    return { error: 'No file was provided.' };
   }
 
   try {
-    const convertedUrl = convertGoogleDriveLink(url);
     const imageData = await readImageData();
-    imageData.logo = convertedUrl;
+    // Delete the old logo if it exists
+    if (imageData.logo) {
+      await deleteFile(imageData.logo);
+    }
+    
+    const newUrl = await uploadFile(file, 'logos');
+    imageData.logo = newUrl;
     await writeImageData(imageData);
 
     revalidateAll();
-    return { success: 'Logo updated successfully!', path: convertedUrl };
-  } catch (error) {
+    return { success: 'Logo updated successfully!', path: newUrl };
+  } catch (error: any) {
     console.error('Upload Logo Error:', error);
-    return { error: 'An error occurred while updating the logo.' };
+    return { error: error.message || 'An error occurred while updating the logo.' };
   }
 }
 
 export async function updateFavicon(formData: FormData) {
-  const url = formData.get('faviconUrl') as string;
-  if (!url) {
-    return { error: 'No URL was provided.' };
+  const file = formData.get('faviconFile') as File;
+  if (!file) {
+    return { error: 'No file was provided.' };
   }
 
   try {
-    const convertedUrl = convertGoogleDriveLink(url);
     const imageData = await readImageData();
-    imageData.favicon = convertedUrl;
+    if (imageData.favicon) {
+        await deleteFile(imageData.favicon);
+    }
+
+    const newUrl = await uploadFile(file, 'favicons');
+    imageData.favicon = newUrl;
     await writeImageData(imageData);
 
     revalidateAll();
-    return { success: 'Favicon updated successfully!', path: convertedUrl };
-  } catch (error) {
+    return { success: 'Favicon updated successfully!', path: newUrl };
+  } catch (error: any) {
     console.error('Update Favicon Error:', error);
-    return { error: 'An error occurred while updating the favicon.' };
+    return { error: error.message || 'An error occurred while updating the favicon.' };
   }
 }
 
 export async function addHeroImage(formData: FormData) {
-  const url = formData.get('heroImageUrl') as string;
+  const file = formData.get('heroImageFile') as File;
   const alt = formData.get('altText') as string;
 
-  if (!url) {
-    return { error: 'No URL was provided.' };
+  if (!file) {
+    return { error: 'No file was provided.' };
   }
   if (!alt) {
     return { error: 'Alternative text is required.' };
   }
 
   try {
-    const convertedUrl = convertGoogleDriveLink(url);
+    const newUrl = await uploadFile(file, 'hero_carousel');
     const imageData = await readImageData();
-    imageData.heroCarousel.push({ src: convertedUrl, alt, hint: '' });
+    imageData.heroCarousel.push({ src: newUrl, alt, hint: '' });
     await writeImageData(imageData);
 
     revalidateAll();
-    return { success: 'Hero image added successfully!', path: convertedUrl };
-  } catch (error) {
+    return { success: 'Hero image added successfully!', path: newUrl };
+  } catch (error: any) {
     console.error('Add Hero Image Error:', error);
-    return { error: 'An error occurred while adding the hero image.' };
+    return { error: error.message || 'An error occurred while adding the hero image.' };
   }
 }
 
@@ -122,32 +139,37 @@ export async function deleteHeroImage(src: string) {
         
         imageData.heroCarousel = imageData.heroCarousel.filter((img) => img.src !== src);
         await writeImageData(imageData);
+        await deleteFile(src);
         
         revalidateAll();
         return { success: 'Hero image deleted successfully.' };
-    } catch(error) {
+    } catch(error: any) {
         console.error('Delete Hero Image Error:', error);
-        return { error: 'An error occurred while deleting the hero image.' };
+        return { error: error.message || 'An error occurred while deleting the hero image.' };
     }
 }
 
 export async function updateSponsorImage(formData: FormData) {
-    const url = formData.get('sponsorImageUrl') as string;
-    if (!url) {
-        return { error: 'No URL was provided.' };
+    const file = formData.get('sponsorImageFile') as File;
+    if (!file) {
+        return { error: 'No file was provided.' };
     }
 
     try {
-        const convertedUrl = convertGoogleDriveLink(url);
         const imageData = await readImageData();
-        imageData.sponsorImage = convertedUrl;
+        if (imageData.sponsorImage) {
+            await deleteFile(imageData.sponsorImage);
+        }
+
+        const newUrl = await uploadFile(file, 'sponsor_images');
+        imageData.sponsorImage = newUrl;
         await writeImageData(imageData);
 
         revalidateAll();
-        return { success: 'Sponsor image updated successfully!', path: convertedUrl };
-    } catch (error) {
+        return { success: 'Sponsor image updated successfully!', path: newUrl };
+    } catch (error: any) {
         console.error('Update Sponsor Image Error:', error);
-        return { error: 'An error occurred while updating the sponsor image.' };
+        return { error: error.message || 'An error occurred while updating the sponsor image.' };
     }
 }
 
@@ -172,37 +194,37 @@ export async function updateDonationAmounts(formData: FormData) {
 
     revalidateAll();
     return { success: 'Donation amounts updated successfully!' };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Update Donation Amounts Error:', error);
-    return { error: 'An error occurred while updating the amounts.' };
+    return { error: error.message || 'An error occurred while updating the amounts.' };
   }
 }
 
 export async function addGalleryImage(formData: FormData) {
-  const url = formData.get('galleryImageUrl') as string;
+  const file = formData.get('galleryImageFile') as File;
   const alt = formData.get('altText') as string;
 
-  if (!url) {
-    return { error: 'No URL was provided.' };
+  if (!file) {
+    return { error: 'No file was provided.' };
   }
   if (!alt) {
     return { error: 'Alternative text is required.' };
   }
 
   try {
-    const convertedUrl = convertGoogleDriveLink(url);
+    const newUrl = await uploadFile(file, 'gallery');
     const imageData = await readImageData();
     if (!imageData.galleryImages) {
         imageData.galleryImages = [];
     }
-    imageData.galleryImages.push({ src: convertedUrl, alt, hint: '' });
+    imageData.galleryImages.push({ src: newUrl, alt, hint: '' });
     await writeImageData(imageData);
 
     revalidateAll();
-    return { success: 'Gallery image added successfully!', path: convertedUrl };
-  } catch (error) {
+    return { success: 'Gallery image added successfully!', path: newUrl };
+  } catch (error: any) {
     console.error('Add Gallery Image Error:', error);
-    return { error: 'An error occurred while adding the gallery image.' };
+    return { error: error.message || 'An error occurred while adding the gallery image.' };
   }
 }
 
@@ -211,11 +233,12 @@ export async function deleteGalleryImage(src: string) {
         const imageData = await readImageData();
         imageData.galleryImages = imageData.galleryImages.filter((img) => img.src !== src);
         await writeImageData(imageData);
+        await deleteFile(src);
         
         revalidateAll();
         return { success: 'Gallery image deleted successfully.' };
-    } catch(error) {
+    } catch(error: any) {
         console.error('Delete Gallery Image Error:', error);
-        return { error: 'An error occurred while deleting the gallery image.' };
+        return { error: error.message || 'An error occurred while deleting the gallery image.' };
     }
 }
