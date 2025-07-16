@@ -1,38 +1,29 @@
 'use server';
 
-import { writeFile, readFile, mkdir } from 'fs/promises';
-import path from 'path';
 import { revalidatePath } from 'next/cache';
-import type { ImageSettings } from '@/types/images';
+import type { ImageSettings, HeroImage } from '@/types/images';
 import { put, del } from '@vercel/blob';
+import { kv } from '@vercel/kv';
 
-const dataFilePath = path.join(process.cwd(), 'src', 'data', 'images.json');
+const KV_KEY = 'image_settings';
 
 async function readImageData(): Promise<ImageSettings> {
-  try {
-    const fileContent = await readFile(dataFilePath, 'utf-8');
-    return JSON.parse(fileContent);
-  } catch (error) {
-    return {
-      logo: '',
-      favicon: '',
-      heroCarousel: [],
-      sponsorImage: '',
-      donationAmounts: [],
-      galleryImages: [],
-    };
+  const data = await kv.get<ImageSettings>(KV_KEY);
+  if (!data) {
+    throw new Error("Image settings not found in KV store. Please ensure defaults are set.");
   }
+  return data;
 }
 
 async function writeImageData(data: ImageSettings) {
-  await mkdir(path.dirname(dataFilePath), { recursive: true });
-  await writeFile(dataFilePath, JSON.stringify(data, null, 2), 'utf-8');
+  await kv.set(KV_KEY, data);
 }
 
 function revalidateAll() {
   revalidatePath('/');
   revalidatePath('/blessingadmin');
   revalidatePath('/gallery');
+  revalidatePath('/layout'); // For favicon
 }
 
 async function uploadFile(file: File, folder: string): Promise<string> {
@@ -41,11 +32,12 @@ async function uploadFile(file: File, folder: string): Promise<string> {
     }
     const blob = await put(`${folder}/${file.name}`, file, {
         access: 'public',
+        addRandomSuffix: false,
     });
     return blob.url;
 }
 
-async function deleteFile(url: string): Promise<void> {
+async function deleteFile(url: string | undefined): Promise<void> {
     if (!url) return;
     try {
         await del(url);
@@ -55,7 +47,6 @@ async function deleteFile(url: string): Promise<void> {
     }
 }
 
-
 export async function uploadLogo(formData: FormData) {
   const file = formData.get('logoFile') as File;
   if (!file) {
@@ -64,10 +55,7 @@ export async function uploadLogo(formData: FormData) {
 
   try {
     const imageData = await readImageData();
-    // Delete the old logo if it exists
-    if (imageData.logo) {
-      await deleteFile(imageData.logo);
-    }
+    await deleteFile(imageData.logo);
     
     const newUrl = await uploadFile(file, 'logos');
     imageData.logo = newUrl;
@@ -89,9 +77,7 @@ export async function updateFavicon(formData: FormData) {
 
   try {
     const imageData = await readImageData();
-    if (imageData.favicon) {
-        await deleteFile(imageData.favicon);
-    }
+    await deleteFile(imageData.favicon);
 
     const newUrl = await uploadFile(file, 'favicons');
     imageData.favicon = newUrl;
@@ -157,9 +143,7 @@ export async function updateSponsorImage(formData: FormData) {
 
     try {
         const imageData = await readImageData();
-        if (imageData.sponsorImage) {
-            await deleteFile(imageData.sponsorImage);
-        }
+        await deleteFile(imageData.sponsorImage);
 
         const newUrl = await uploadFile(file, 'sponsor_images');
         imageData.sponsorImage = newUrl;
@@ -214,6 +198,7 @@ export async function addGalleryImage(formData: FormData) {
   try {
     const newUrl = await uploadFile(file, 'gallery');
     const imageData = await readImageData();
+    
     if (!imageData.galleryImages) {
         imageData.galleryImages = [];
     }
