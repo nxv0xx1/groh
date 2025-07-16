@@ -1,3 +1,4 @@
+
 import { kv } from '@vercel/kv';
 import type { ImageSettings } from '@/types/images';
 
@@ -35,6 +36,14 @@ const defaultImageData: ImageSettings = {
 };
 
 export async function getImageData(): Promise<ImageSettings> {
+  // In a production environment, Vercel KV must be configured.
+  // If not, we can fall back to default data for the public site,
+  // but the admin panel will still fail on write operations, which is intended.
+  if (process.env.VERCEL_ENV === "production" && (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN)) {
+    console.warn("Vercel KV credentials are not configured. Falling back to default image data.");
+    return defaultImageData;
+  }
+  
   try {
     const data = await kv.get<ImageSettings>(KV_KEY);
     if (data) {
