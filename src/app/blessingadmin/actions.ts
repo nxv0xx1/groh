@@ -1,3 +1,4 @@
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -7,15 +8,29 @@ import { kv } from '@vercel/kv';
 
 const KV_KEY = 'image_settings';
 
+// Helper function to ensure environment is ready
+function checkEnvironment() {
+  if (process.env.VERCEL_ENV === 'production' && (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN)) {
+    throw new Error('Vercel KV credentials are not configured in the production environment.');
+  }
+   if (process.env.VERCEL_ENV === 'production' && !process.env.BLOB_READ_WRITE_TOKEN) {
+    throw new Error('Vercel Blob storage token is not configured in the production environment.');
+  }
+}
+
 async function readImageData(): Promise<ImageSettings> {
+  checkEnvironment();
   const data = await kv.get<ImageSettings>(KV_KEY);
   if (!data) {
-    throw new Error("Image settings not found in KV store. Please ensure defaults are set.");
+    // This could be the first run, so let's check the default data function
+    const { getImageData } = await import('@/lib/image-data');
+    return getImageData();
   }
   return data;
 }
 
 async function writeImageData(data: ImageSettings) {
+  checkEnvironment();
   await kv.set(KV_KEY, data);
 }
 
@@ -27,6 +42,7 @@ function revalidateAll() {
 }
 
 async function uploadFile(file: File, folder: string): Promise<string> {
+    checkEnvironment();
     if (!file || file.size === 0) {
         throw new Error('No file was provided or the file is empty.');
     }
@@ -40,6 +56,7 @@ async function uploadFile(file: File, folder: string): Promise<string> {
 async function deleteFile(url: string | undefined): Promise<void> {
     if (!url) return;
     try {
+        checkEnvironment();
         await del(url);
     } catch (error) {
         // Log the error but don't block the operation
@@ -153,7 +170,7 @@ export async function updateSponsorImage(formData: FormData) {
         return { success: 'Sponsor image updated successfully!', path: newUrl };
     } catch (error: any) {
         console.error('Update Sponsor Image Error:', error);
-        return { error: error.message || 'An error occurred while updating the sponsor image.' };
+        return { error: error..message || 'An error occurred while updating the sponsor image.' };
     }
 }
 
