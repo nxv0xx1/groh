@@ -170,7 +170,7 @@ export async function updateSponsorImage(formData: FormData) {
         return { success: 'Sponsor image updated successfully!', path: newUrl };
     } catch (error: any) {
         console.error('Update Sponsor Image Error:', error);
-        return { error: error..message || 'An error occurred while updating the sponsor image.' };
+        return { error: error.message || 'An error occurred while updating the sponsor image.' };
     }
 }
 
