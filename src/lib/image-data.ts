@@ -24,12 +24,12 @@ const defaultImageData: ImageSettings = {
     {
       src: "https://placehold.co/600x400.png",
       alt: "Gallery Image 1",
-      hint": "children happy"
+      hint: "children happy"
     },
     {
       src: "https://placehold.co/600x400.png",
       alt: "Gallery Image 2",
-      hint": "kids smiling"
+      hint: "kids smiling"
     }
   ]
 };
