@@ -1,6 +1,11 @@
 
-import { kv } from '@vercel/kv';
+import { createClient } from '@vercel/kv';
 import type { ImageSettings } from '@/types/images';
+
+const kv = createClient({
+  url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || '',
+  token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '',
+});
 
 const KV_KEY = 'image_settings';
 
@@ -36,11 +41,14 @@ const defaultImageData: ImageSettings = {
 };
 
 export async function getImageData(): Promise<ImageSettings> {
-  // In a production environment, Vercel KV must be configured.
-  // If not, we can fall back to default data for the public site,
-  // but the admin panel will still fail on write operations, which is intended.
-  if (process.env.VERCEL_ENV === "production" && (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN)) {
-    console.warn("Vercel KV credentials are not configured. Falling back to default image data.");
+  // In a production environment, Vercel KV or Upstash must be configured.
+  // If not, we can fall back to default data for the public site.
+  const isVercelProd = process.env.VERCEL_ENV === 'production';
+  const hasVercelKv = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
+  const hasUpstash = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (isVercelProd && !hasVercelKv && !hasUpstash) {
+    console.warn("Vercel KV or Upstash credentials are not configured. Falling back to default image data.");
     return defaultImageData;
   }
   
@@ -54,7 +62,7 @@ export async function getImageData(): Promise<ImageSettings> {
     await kv.set(KV_KEY, defaultImageData);
     return defaultImageData;
   } catch (error) {
-    console.error("Could not read from Vercel KV. Falling back to default images.", error);
+    console.error("Could not read from Vercel KV/Upstash. Falling back to default images.", error);
     return defaultImageData;
   }
 }

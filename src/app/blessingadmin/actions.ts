@@ -4,17 +4,29 @@
 import { revalidatePath } from 'next/cache';
 import type { ImageSettings, HeroImage } from '@/types/images';
 import { put, del } from '@vercel/blob';
-import { kv } from '@vercel/kv';
+import { createClient } from '@vercel/kv';
+
+const kv = createClient({
+  url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || '',
+  token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '',
+});
 
 const KV_KEY = 'image_settings';
 
 // Helper function to ensure environment is ready
 function checkEnvironment() {
-  if (process.env.VERCEL_ENV === 'production' && (!process.env.KV_REST_API_URL || !process.env.KV_REST_API_TOKEN)) {
-    throw new Error('Vercel KV credentials are not configured in the production environment.');
-  }
-   if (process.env.VERCEL_ENV === 'production' && !process.env.BLOB_READ_WRITE_TOKEN) {
-    throw new Error('Vercel Blob storage token is not configured in the production environment.');
+  const isVercelProd = process.env.VERCEL_ENV === 'production';
+  
+  if (isVercelProd) {
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      throw new Error('Vercel Blob storage token is not configured in the production environment.');
+    }
+    const hasVercelKv = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
+    const hasUpstash = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN;
+
+    if (!hasVercelKv && !hasUpstash) {
+      throw new Error('Vercel KV or Upstash credentials are not configured in the production environment.');
+    }
   }
 }
 
