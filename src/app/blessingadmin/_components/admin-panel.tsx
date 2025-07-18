@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { ImageSettings } from '@/types/images';
@@ -11,6 +12,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { addHeroImage, deleteHeroImage, updateSponsorImage, uploadLogo, updateFavicon, updateDonationAmounts, addGalleryImage, deleteGalleryImage } from '../actions';
 import { Trash2, Upload } from 'lucide-react';
+
+const MAX_FILE_SIZE_MB = 4;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) {
   const router = useRouter();
@@ -26,11 +30,19 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
 
   const handleFormSubmit = (action: (formData: FormData) => Promise<any>, ref: React.RefObject<HTMLFormElement>) => {
     return (formData: FormData) => {
-      // Check if file input is empty for forms that require it
       const fileInput = ref.current?.querySelector('input[type="file"]') as HTMLInputElement;
-      if (fileInput && fileInput.files?.length === 0) {
-        toast({ variant: 'destructive', title: 'Error', description: 'Please select a file to upload.' });
-        return;
+
+      // Handle forms without file inputs (like donation amounts)
+      if (fileInput) {
+          if (!fileInput.files || fileInput.files.length === 0) {
+              toast({ variant: 'destructive', title: 'Error', description: 'Please select a file to upload.' });
+              return;
+          }
+          const file = fileInput.files[0];
+          if (file.size > MAX_FILE_SIZE_BYTES) {
+              toast({ variant: 'destructive', title: 'File Too Large', description: `Please upload a file smaller than ${MAX_FILE_SIZE_MB}MB.` });
+              return;
+          }
       }
 
       startTransition(async () => {
@@ -82,7 +94,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
       <Card>
         <CardHeader>
           <CardTitle>Site Logo</CardTitle>
-          <CardDescription>Upload a new site logo.</CardDescription>
+          <CardDescription>Upload a new site logo. Max {MAX_FILE_SIZE_MB}MB.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-4">
@@ -105,7 +117,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
       <Card>
         <CardHeader>
           <CardTitle>Site Favicon</CardTitle>
-          <CardDescription>Update the browser tab icon (favicon).</CardDescription>
+          <CardDescription>Update the browser tab icon. Max {MAX_FILE_SIZE_MB}MB.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-4">
@@ -128,7 +140,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
       <Card>
         <CardHeader>
           <CardTitle>Sponsor Section Image</CardTitle>
-          <CardDescription>Update the image in the "Sponsor a Child" section.</CardDescription>
+          <CardDescription>Update the image. Max {MAX_FILE_SIZE_MB}MB.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="relative aspect-video w-full">
@@ -151,7 +163,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
       <Card>
         <CardHeader>
           <CardTitle>Hero Carousel Images</CardTitle>
-          <CardDescription>Add or remove images from the homepage carousel.</CardDescription>
+          <CardDescription>Add or remove images. Max {MAX_FILE_SIZE_MB}MB.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
@@ -191,7 +203,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
       <Card>
         <CardHeader>
           <CardTitle>Gallery Images</CardTitle>
-          <CardDescription>Add or remove images from the gallery page.</CardDescription>
+          <CardDescription>Add or remove images. Max {MAX_FILE_SIZE_MB}MB.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
@@ -259,3 +271,5 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
     </div>
   );
 }
+
+    
