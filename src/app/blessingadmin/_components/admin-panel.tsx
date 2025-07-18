@@ -2,7 +2,7 @@
 'use client';
 
 import type { ImageSettings } from '@/types/images';
-import { useRef, useTransition } from 'react';
+import { useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { addHeroImage, deleteHeroImage, updateSponsorImage, uploadLogo, updateFavicon, updateDonationAmounts, addGalleryImage, deleteGalleryImage } from '../actions';
-import { Trash2, Upload } from 'lucide-react';
+import { Trash2, Upload, Loader2 } from 'lucide-react';
+import type { PutBlobResult } from '@vercel/blob';
 
 const MAX_FILE_SIZE_MB = 4;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -20,46 +21,88 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const [uploadingState, setUploadingState] = useState<Record<string, boolean>>({});
 
-  const handleFormSubmit = (
-    action: (formData: FormData) => Promise<any>,
-    formRef: React.RefObject<HTMLFormElement>,
-    fileInputName: string | null
+  const handleClientUpload = async (
+    event: React.FormEvent<HTMLFormElement>,
+    formId: string,
+    serverAction: (payload: { url: string; [key: string]: any }) => Promise<any>
   ) => {
-    return async (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      const formData = new FormData(event.currentTarget);
+    event.preventDefault();
 
-      if (fileInputName) {
-        const fileInput = event.currentTarget[fileInputName as any] as HTMLInputElement;
-        if (!fileInput.files || fileInput.files.length === 0) {
-          toast({ variant: 'destructive', title: 'Error', description: 'Please select a file to upload.' });
-          return;
-        }
-        const file = fileInput.files[0];
-        if (file.size > MAX_FILE_SIZE_BYTES) {
-          toast({ variant: 'destructive', title: 'File Too Large', description: `Please upload a file smaller than ${MAX_FILE_SIZE_MB}MB.` });
-          return;
-        }
+    setUploadingState(prev => ({ ...prev, [formId]: true }));
+    
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const fileInput = form.querySelector('input[type="file"]') as HTMLInputElement;
+
+    if (!fileInput.files || fileInput.files.length === 0) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Please select a file to upload.' });
+      setUploadingState(prev => ({ ...prev, [formId]: false }));
+      return;
+    }
+
+    const file = fileInput.files[0];
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+        toast({ variant: 'destructive', title: 'File Too Large', description: `Please upload a file smaller than ${MAX_FILE_SIZE_MB}MB.` });
+        setUploadingState(prev => ({ ...prev, [formId]: false }));
+        return;
+    }
+
+    try {
+      const uploadResponse = await fetch(`/api/upload?filename=${file.name}`, {
+        method: 'POST',
+        body: JSON.stringify({ type: 'put-blob', addRandomSuffix: true }),
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to get upload signature.');
       }
+      
+      const newBlob = (await uploadResponse.json()) as PutBlobResult;
 
+      const actionPayload: { url: string; [key: string]: any } = { url: newBlob.url };
+      
+      const altTextInput = form.querySelector('input[name="altText"]') as HTMLInputElement;
+      if (altTextInput) {
+        actionPayload.altText = altTextInput.value;
+      }
+      
       startTransition(async () => {
-        try {
-          const result = await action(formData);
-          if (result?.error) {
-            toast({ variant: 'destructive', title: 'Error', description: result.error });
-          } else {
-            toast({ title: 'Success!', description: result.success });
-            formRef.current?.reset();
-            router.refresh();
-          }
-        } catch (error) {
-          console.error("A client-side error occurred during form submission:", error);
-          toast({ variant: 'destructive', title: 'Client Error', description: 'An unexpected error occurred. Please check the console.' });
+        const result = await serverAction(actionPayload);
+        if (result?.error) {
+          toast({ variant: 'destructive', title: 'Error', description: result.error });
+        } else {
+          toast({ title: 'Success!', description: result.success });
+          form.reset();
+          router.refresh();
         }
       });
-    };
+
+    } catch (error) {
+      console.error("A client-side error occurred during form submission:", error);
+      toast({ variant: 'destructive', title: 'Client Error', description: 'An unexpected error occurred. Please check the console.' });
+    } finally {
+      setUploadingState(prev => ({ ...prev, [formId]: false }));
+    }
   };
+  
+  const handleDonationAmountsSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const formData = new FormData(event.currentTarget);
+      
+      startTransition(async () => {
+          const result = await updateDonationAmounts(formData);
+          if (result?.error) {
+              toast({ variant: 'destructive', title: 'Error', description: result.error });
+          } else {
+              toast({ title: 'Success!', description: result.success });
+              event.currentTarget.reset();
+              router.refresh();
+          }
+      });
+  }
 
   const handleDeleteHeroImage = (src: string) => {
     startTransition(async () => {
@@ -86,12 +129,8 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
   };
 
   const canDeleteHeroImages = initialImages.heroCarousel.length > 1;
-  const logoFormRef = useRef<HTMLFormElement>(null);
-  const sponsorFormRef = useRef<HTMLFormElement>(null);
-  const heroFormRef = useRef<HTMLFormElement>(null);
-  const faviconFormRef = useRef<HTMLFormElement>(null);
-  const donationAmountsFormRef = useRef<HTMLFormElement>(null);
-  const galleryFormRef = useRef<HTMLFormElement>(null);
+
+  const isLoading = (formId: string) => isPending || uploadingState[formId];
 
   return (
     <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -108,11 +147,11 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-xs">No Logo</div>
             )}
           </div>
-          <form ref={logoFormRef} onSubmit={handleFormSubmit(uploadLogo, logoFormRef, 'logoFile')} className="space-y-2">
+          <form onSubmit={(e) => handleClientUpload(e, 'logoForm', uploadLogo)} className="space-y-2">
             <Label htmlFor="logoFile">New Logo File</Label>
             <Input id="logoFile" name="logoFile" type="file" required accept="image/*" />
-            <Button type="submit" disabled={isPending}>
-              {isPending ? 'Uploading...' : <><Upload className="mr-2 h-4 w-4" /> Update Logo</>}
+            <Button type="submit" disabled={isLoading('logoForm')}>
+              {isLoading('logoForm') ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</> : <><Upload className="mr-2 h-4 w-4" /> Update Logo</>}
             </Button>
           </form>
         </CardContent>
@@ -131,11 +170,11 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
               <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground text-xs">No Icon</div>
             )}
           </div>
-          <form ref={faviconFormRef} onSubmit={handleFormSubmit(updateFavicon, faviconFormRef, 'faviconFile')} className="space-y-2">
+          <form onSubmit={(e) => handleClientUpload(e, 'faviconForm', updateFavicon)} className="space-y-2">
             <Label htmlFor="faviconFile">New Favicon File</Label>
             <Input id="faviconFile" name="faviconFile" type="file" required accept="image/png, image/x-icon, image/svg+xml" />
-            <Button type="submit" disabled={isPending}>
-              {isPending ? 'Uploading...' : <><Upload className="mr-2 h-4 w-4" /> Update Favicon</>}
+            <Button type="submit" disabled={isLoading('faviconForm')}>
+              {isLoading('faviconForm') ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</> : <><Upload className="mr-2 h-4 w-4" /> Update Favicon</>}
             </Button>
           </form>
         </CardContent>
@@ -154,11 +193,11 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
                 <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-sm rounded-md">No Image</div>
             )}
           </div>
-          <form ref={sponsorFormRef} onSubmit={handleFormSubmit(updateSponsorImage, sponsorFormRef, 'sponsorImageFile')} className="space-y-2">
+          <form onSubmit={(e) => handleClientUpload(e, 'sponsorForm', updateSponsorImage)} className="space-y-2">
             <Label htmlFor="sponsorImageFile">New Sponsor Image</Label>
             <Input id="sponsorImageFile" name="sponsorImageFile" type="file" required accept="image/*" />
-            <Button type="submit" disabled={isPending}>
-              {isPending ? 'Uploading...' : <><Upload className="mr-2 h-4 w-4" /> Update Image</>}
+            <Button type="submit" disabled={isLoading('sponsorForm')}>
+              {isLoading('sponsorForm') ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</> : <><Upload className="mr-2 h-4 w-4" /> Update Image</>}
             </Button>
           </form>
         </CardContent>
@@ -191,14 +230,14 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
               ))}
             </div>
           </div>
-          <form ref={heroFormRef} onSubmit={handleFormSubmit(addHeroImage, heroFormRef, 'heroImageFile')} className="space-y-2 border-t pt-4">
+          <form onSubmit={(e) => handleClientUpload(e, 'heroForm', addHeroImage)} className="space-y-2 border-t pt-4">
             <h4 className="font-semibold">Add New Image</h4>
             <Label htmlFor="heroImageFile">Image File</Label>
             <Input id="heroImageFile" name="heroImageFile" type="file" required accept="image/*" />
             <Label htmlFor="hero-alt">Alternative Text</Label>
             <Input id="hero-alt" name="altText" type="text" required placeholder="e.g., Children playing outside" />
-            <Button type="submit" disabled={isPending}>
-              {isPending ? 'Adding...' : <><Upload className="mr-2 h-4 w-4" /> Add to Carousel</>}
+            <Button type="submit" disabled={isLoading('heroForm')}>
+              {isLoading('heroForm') ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Adding...</> : <><Upload className="mr-2 h-4 w-4" /> Add to Carousel</>}
             </Button>
           </form>
         </CardContent>
@@ -235,14 +274,14 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
               <p className="text-sm text-muted-foreground mt-2">No gallery images yet.</p>
             )}
           </div>
-          <form ref={galleryFormRef} onSubmit={handleFormSubmit(addGalleryImage, galleryFormRef, 'galleryImageFile')} className="space-y-2 border-t pt-4">
+          <form onSubmit={(e) => handleClientUpload(e, 'galleryForm', addGalleryImage)} className="space-y-2 border-t pt-4">
             <h4 className="font-semibold">Add New Image</h4>
             <Label htmlFor="galleryImageFile">Image File</Label>
             <Input id="galleryImageFile" name="galleryImageFile" type="file" required accept="image/*" />
             <Label htmlFor="gallery-alt">Alternative Text</Label>
             <Input id="gallery-alt" name="altText" type="text" required placeholder="e.g., Children playing outside" />
-            <Button type="submit" disabled={isPending}>
-              {isPending ? 'Adding...' : <><Upload className="mr-2 h-4 w-4" /> Add to Gallery</>}
+            <Button type="submit" disabled={isLoading('galleryForm')}>
+              {isLoading('galleryForm') ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Adding...</> : <><Upload className="mr-2 h-4 w-4" /> Add to Gallery</>}
             </Button>
           </form>
         </CardContent>
@@ -255,7 +294,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
           <CardDescription>Set the preset donation amounts (in NGN).</CardDescription>
         </CardHeader>
         <CardContent>
-          <form ref={donationAmountsFormRef} onSubmit={handleFormSubmit(updateDonationAmounts, donationAmountsFormRef, null)} className="space-y-2">
+          <form onSubmit={handleDonationAmountsSubmit} className="space-y-2">
             <Label htmlFor="donation-amounts">Amounts (comma-separated)</Label>
             <Input 
               id="donation-amounts" 
@@ -275,5 +314,3 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
     </div>
   );
 }
-
-    
