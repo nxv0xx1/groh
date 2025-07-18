@@ -15,11 +15,11 @@ const KV_KEY = 'image_settings';
 
 // Helper function to ensure environment is ready
 function checkEnvironment() {
-  const isVercelProd = process.env.VERCEL_ENV === 'production';
+  const isVercel = !!process.env.VERCEL_ENV;
   
-  if (isVercelProd) {
+  if (isVercel) {
     if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      throw new Error('Vercel Blob storage token is not configured in the production environment.');
+      throw new Error('Vercel Blob storage token (BLOB_READ_WRITE_TOKEN) is not configured.');
     }
     const hasVercelKv = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
     const hasUpstash = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -31,18 +31,22 @@ function checkEnvironment() {
 }
 
 async function readImageData(): Promise<ImageSettings> {
-  checkEnvironment();
-  const data = await kv.get<ImageSettings>(KV_KEY);
-  if (!data) {
-    // This could be the first run, so let's check the default data function
-    const { getImageData } = await import('@/lib/image-data');
-    return getImageData();
+  const { getImageData: getDefaultImageData } = await import('@/lib/image-data');
+  try {
+    checkEnvironment(); // Check here before trying to read
+    const data = await kv.get<ImageSettings>(KV_KEY);
+    if (!data) {
+      return getDefaultImageData();
+    }
+    return data;
+  } catch (error) {
+     console.warn("Could not read from KV, falling back to default image data.", error)
+     return getDefaultImageData();
   }
-  return data;
 }
 
 async function writeImageData(data: ImageSettings) {
-  checkEnvironment();
+  checkEnvironment(); // This must be called inside a try/catch in the actions
   await kv.set(KV_KEY, data);
 }
 
@@ -54,7 +58,7 @@ function revalidateAll() {
 }
 
 async function uploadFile(file: File, folder: string): Promise<string> {
-    checkEnvironment();
+    checkEnvironment(); // This must be called inside a try/catch in the actions
     if (!file || file.size === 0) {
         throw new Error('No file was provided or the file is empty.');
     }
@@ -67,14 +71,20 @@ async function uploadFile(file: File, folder: string): Promise<string> {
 
 // Helper to check if a URL is a Vercel Blob URL before attempting to delete
 function isVercelBlobUrl(url: string | undefined): boolean {
-    return !!url && url.includes('.public.blob.vercel-storage.com');
+    if (!url) return false;
+    try {
+        const hostname = new URL(url).hostname;
+        return hostname.endsWith('.public.blob.vercel-storage.com');
+    } catch (e) {
+        return false;
+    }
 }
 
 
 async function deleteFile(url: string | undefined): Promise<void> {
     if (!isVercelBlobUrl(url)) return;
     try {
-        checkEnvironment();
+        checkEnvironment(); // This must be called inside a try/catch in the actions
         await del(url!);
     } catch (error) {
         // Log the error but don't block the operation
@@ -83,12 +93,13 @@ async function deleteFile(url: string | undefined): Promise<void> {
 }
 
 export async function uploadLogo(formData: FormData) {
-  const file = formData.get('logoFile') as File;
-  if (!file) {
-    return { error: 'No file was provided.' };
-  }
-
   try {
+    checkEnvironment();
+    const file = formData.get('logoFile') as File;
+    if (!file) {
+      return { error: 'No file was provided.' };
+    }
+
     const imageData = await readImageData();
     await deleteFile(imageData.logo);
     
@@ -105,12 +116,13 @@ export async function uploadLogo(formData: FormData) {
 }
 
 export async function updateFavicon(formData: FormData) {
-  const file = formData.get('faviconFile') as File;
-  if (!file) {
-    return { error: 'No file was provided.' };
-  }
-
   try {
+    checkEnvironment();
+    const file = formData.get('faviconFile') as File;
+    if (!file) {
+      return { error: 'No file was provided.' };
+    }
+
     const imageData = await readImageData();
     await deleteFile(imageData.favicon);
 
@@ -127,17 +139,18 @@ export async function updateFavicon(formData: FormData) {
 }
 
 export async function addHeroImage(formData: FormData) {
-  const file = formData.get('heroImageFile') as File;
-  const alt = formData.get('altText') as string;
-
-  if (!file) {
-    return { error: 'No file was provided.' };
-  }
-  if (!alt) {
-    return { error: 'Alternative text is required.' };
-  }
-
   try {
+    checkEnvironment();
+    const file = formData.get('heroImageFile') as File;
+    const alt = formData.get('altText') as string;
+
+    if (!file) {
+      return { error: 'No file was provided.' };
+    }
+    if (!alt) {
+      return { error: 'Alternative text is required.' };
+    }
+
     const newUrl = await uploadFile(file, 'hero_carousel');
     const imageData = await readImageData();
     imageData.heroCarousel.push({ src: newUrl, alt, hint: '' });
@@ -153,6 +166,7 @@ export async function addHeroImage(formData: FormData) {
 
 export async function deleteHeroImage(src: string) {
     try {
+        checkEnvironment();
         const imageData = await readImageData();
         if (imageData.heroCarousel.length <= 1) {
             return { error: 'Cannot delete the last image. The carousel must have at least one image.' };
@@ -171,12 +185,13 @@ export async function deleteHeroImage(src: string) {
 }
 
 export async function updateSponsorImage(formData: FormData) {
-    const file = formData.get('sponsorImageFile') as File;
-    if (!file) {
-        return { error: 'No file was provided.' };
-    }
-
     try {
+        checkEnvironment();
+        const file = formData.get('sponsorImageFile') as File;
+        if (!file) {
+            return { error: 'No file was provided.' };
+        }
+
         const imageData = await readImageData();
         await deleteFile(imageData.sponsorImage);
 
@@ -193,12 +208,13 @@ export async function updateSponsorImage(formData: FormData) {
 }
 
 export async function updateDonationAmounts(formData: FormData) {
-  const amountsStr = formData.get('donationAmounts') as string;
-  if (!amountsStr) {
-    return { error: 'No amounts were provided.' };
-  }
-
   try {
+    checkEnvironment();
+    const amountsStr = formData.get('donationAmounts') as string;
+    if (!amountsStr) {
+      return { error: 'No amounts were provided.' };
+    }
+
     const amounts = amountsStr.split(',')
       .map(s => parseInt(s.trim(), 10))
       .filter(n => !isNaN(n) && n > 0);
@@ -220,17 +236,18 @@ export async function updateDonationAmounts(formData: FormData) {
 }
 
 export async function addGalleryImage(formData: FormData) {
-  const file = formData.get('galleryImageFile') as File;
-  const alt = formData.get('altText') as string;
-
-  if (!file) {
-    return { error: 'No file was provided.' };
-  }
-  if (!alt) {
-    return { error: 'Alternative text is required.' };
-  }
-
   try {
+    checkEnvironment();
+    const file = formData.get('galleryImageFile') as File;
+    const alt = formData.get('altText') as string;
+
+    if (!file) {
+      return { error: 'No file was provided.' };
+    }
+    if (!alt) {
+      return { error: 'Alternative text is required.' };
+    }
+
     const newUrl = await uploadFile(file, 'gallery');
     const imageData = await readImageData();
     
@@ -250,6 +267,7 @@ export async function addGalleryImage(formData: FormData) {
 
 export async function deleteGalleryImage(src: string) {
     try {
+        checkEnvironment();
         const imageData = await readImageData();
         imageData.galleryImages = imageData.galleryImages.filter((img) => img.src !== src);
         await writeImageData(imageData);

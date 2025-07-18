@@ -40,14 +40,16 @@ const defaultImageData: ImageSettings = {
   ]
 };
 
+function hasKvCredentials() {
+  const hasVercelKv = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
+  const hasUpstash = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN;
+  return hasVercelKv || hasUpstash;
+}
+
 export async function getImageData(): Promise<ImageSettings> {
   // In a production environment, Vercel KV or Upstash must be configured.
   // If not, we can fall back to default data for the public site.
-  const isVercelProd = process.env.VERCEL_ENV === 'production';
-  const hasVercelKv = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
-  const hasUpstash = process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN;
-
-  if (isVercelProd && !hasVercelKv && !hasUpstash) {
+  if (!hasKvCredentials()) {
     console.warn("Vercel KV or Upstash credentials are not configured. Falling back to default image data.");
     return defaultImageData;
   }
