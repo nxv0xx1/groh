@@ -2,7 +2,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import type { ImageSettings, HeroImage } from '@/types/images';
+import type { ImageSettings } from '@/types/images';
 import { put, del } from '@vercel/blob';
 import { createClient } from '@vercel/kv';
 
@@ -65,11 +65,17 @@ async function uploadFile(file: File, folder: string): Promise<string> {
     return blob.url;
 }
 
+// Helper to check if a URL is a Vercel Blob URL before attempting to delete
+function isVercelBlobUrl(url: string | undefined): boolean {
+    return !!url && url.includes('.public.blob.vercel-storage.com');
+}
+
+
 async function deleteFile(url: string | undefined): Promise<void> {
-    if (!url) return;
+    if (!isVercelBlobUrl(url)) return;
     try {
         checkEnvironment();
-        await del(url);
+        await del(url!);
     } catch (error) {
         // Log the error but don't block the operation
         console.warn(`Could not delete file from blob storage: ${url}`, error);
