@@ -34,13 +34,18 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
       }
 
       startTransition(async () => {
-        const result = await action(formData);
-        if (result?.error) {
-          toast({ variant: 'destructive', title: 'Error', description: result.error });
-        } else {
-          toast({ title: 'Success!', description: result.success });
-          ref.current?.reset();
-          router.refresh();
+        try {
+          const result = await action(formData);
+          if (result?.error) {
+            toast({ variant: 'destructive', title: 'Error', description: result.error });
+          } else {
+            toast({ title: 'Success!', description: result.success });
+            ref.current?.reset();
+            router.refresh();
+          }
+        } catch (error) {
+            console.error("An unexpected client-side error occurred:", error);
+            toast({ variant: 'destructive', title: 'Client Error', description: 'An unexpected error occurred. Please check the console.' });
         }
       });
     };
