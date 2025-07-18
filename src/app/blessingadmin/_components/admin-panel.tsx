@@ -21,28 +21,26 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
 
-  const logoFormRef = useRef<HTMLFormElement>(null);
-  const sponsorFormRef = useRef<HTMLFormElement>(null);
-  const heroFormRef = useRef<HTMLFormElement>(null);
-  const faviconFormRef = useRef<HTMLFormElement>(null);
-  const donationAmountsFormRef = useRef<HTMLFormElement>(null);
-  const galleryFormRef = useRef<HTMLFormElement>(null);
+  const handleFormSubmit = (
+    action: (formData: FormData) => Promise<any>,
+    formRef: React.RefObject<HTMLFormElement>,
+    fileInputName: string | null
+  ) => {
+    return async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const formData = new FormData(event.currentTarget);
 
-  const handleFormSubmit = (action: (formData: FormData) => Promise<any>, ref: React.RefObject<HTMLFormElement>) => {
-    return (formData: FormData) => {
-      const fileInput = ref.current?.querySelector('input[type="file"]') as HTMLInputElement;
-
-      // Handle forms without file inputs (like donation amounts)
-      if (fileInput) {
-          if (!fileInput.files || fileInput.files.length === 0) {
-              toast({ variant: 'destructive', title: 'Error', description: 'Please select a file to upload.' });
-              return;
-          }
-          const file = fileInput.files[0];
-          if (file.size > MAX_FILE_SIZE_BYTES) {
-              toast({ variant: 'destructive', title: 'File Too Large', description: `Please upload a file smaller than ${MAX_FILE_SIZE_MB}MB.` });
-              return;
-          }
+      if (fileInputName) {
+        const fileInput = event.currentTarget[fileInputName as any] as HTMLInputElement;
+        if (!fileInput.files || fileInput.files.length === 0) {
+          toast({ variant: 'destructive', title: 'Error', description: 'Please select a file to upload.' });
+          return;
+        }
+        const file = fileInput.files[0];
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+          toast({ variant: 'destructive', title: 'File Too Large', description: `Please upload a file smaller than ${MAX_FILE_SIZE_MB}MB.` });
+          return;
+        }
       }
 
       startTransition(async () => {
@@ -52,12 +50,12 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
             toast({ variant: 'destructive', title: 'Error', description: result.error });
           } else {
             toast({ title: 'Success!', description: result.success });
-            ref.current?.reset();
+            formRef.current?.reset();
             router.refresh();
           }
         } catch (error) {
-            console.error("An unexpected client-side error occurred:", error);
-            toast({ variant: 'destructive', title: 'Client Error', description: 'An unexpected error occurred. Please check the console.' });
+          console.error("A client-side error occurred during form submission:", error);
+          toast({ variant: 'destructive', title: 'Client Error', description: 'An unexpected error occurred. Please check the console.' });
         }
       });
     };
@@ -88,6 +86,12 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
   };
 
   const canDeleteHeroImages = initialImages.heroCarousel.length > 1;
+  const logoFormRef = useRef<HTMLFormElement>(null);
+  const sponsorFormRef = useRef<HTMLFormElement>(null);
+  const heroFormRef = useRef<HTMLFormElement>(null);
+  const faviconFormRef = useRef<HTMLFormElement>(null);
+  const donationAmountsFormRef = useRef<HTMLFormElement>(null);
+  const galleryFormRef = useRef<HTMLFormElement>(null);
 
   return (
     <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -104,7 +108,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-xs">No Logo</div>
             )}
           </div>
-          <form ref={logoFormRef} action={handleFormSubmit(uploadLogo, logoFormRef)} className="space-y-2">
+          <form ref={logoFormRef} onSubmit={handleFormSubmit(uploadLogo, logoFormRef, 'logoFile')} className="space-y-2">
             <Label htmlFor="logoFile">New Logo File</Label>
             <Input id="logoFile" name="logoFile" type="file" required accept="image/*" />
             <Button type="submit" disabled={isPending}>
@@ -127,7 +131,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
               <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground text-xs">No Icon</div>
             )}
           </div>
-          <form ref={faviconFormRef} action={handleFormSubmit(updateFavicon, faviconFormRef)} className="space-y-2">
+          <form ref={faviconFormRef} onSubmit={handleFormSubmit(updateFavicon, faviconFormRef, 'faviconFile')} className="space-y-2">
             <Label htmlFor="faviconFile">New Favicon File</Label>
             <Input id="faviconFile" name="faviconFile" type="file" required accept="image/png, image/x-icon, image/svg+xml" />
             <Button type="submit" disabled={isPending}>
@@ -150,7 +154,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
                 <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-sm rounded-md">No Image</div>
             )}
           </div>
-          <form ref={sponsorFormRef} action={handleFormSubmit(updateSponsorImage, sponsorFormRef)} className="space-y-2">
+          <form ref={sponsorFormRef} onSubmit={handleFormSubmit(updateSponsorImage, sponsorFormRef, 'sponsorImageFile')} className="space-y-2">
             <Label htmlFor="sponsorImageFile">New Sponsor Image</Label>
             <Input id="sponsorImageFile" name="sponsorImageFile" type="file" required accept="image/*" />
             <Button type="submit" disabled={isPending}>
@@ -187,7 +191,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
               ))}
             </div>
           </div>
-          <form ref={heroFormRef} action={handleFormSubmit(addHeroImage, heroFormRef)} className="space-y-2 border-t pt-4">
+          <form ref={heroFormRef} onSubmit={handleFormSubmit(addHeroImage, heroFormRef, 'heroImageFile')} className="space-y-2 border-t pt-4">
             <h4 className="font-semibold">Add New Image</h4>
             <Label htmlFor="heroImageFile">Image File</Label>
             <Input id="heroImageFile" name="heroImageFile" type="file" required accept="image/*" />
@@ -231,7 +235,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
               <p className="text-sm text-muted-foreground mt-2">No gallery images yet.</p>
             )}
           </div>
-          <form ref={galleryFormRef} action={handleFormSubmit(addGalleryImage, galleryFormRef)} className="space-y-2 border-t pt-4">
+          <form ref={galleryFormRef} onSubmit={handleFormSubmit(addGalleryImage, galleryFormRef, 'galleryImageFile')} className="space-y-2 border-t pt-4">
             <h4 className="font-semibold">Add New Image</h4>
             <Label htmlFor="galleryImageFile">Image File</Label>
             <Input id="galleryImageFile" name="galleryImageFile" type="file" required accept="image/*" />
@@ -251,7 +255,7 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
           <CardDescription>Set the preset donation amounts (in NGN).</CardDescription>
         </CardHeader>
         <CardContent>
-          <form ref={donationAmountsFormRef} action={handleFormSubmit(updateDonationAmounts, donationAmountsFormRef)} className="space-y-2">
+          <form ref={donationAmountsFormRef} onSubmit={handleFormSubmit(updateDonationAmounts, donationAmountsFormRef, null)} className="space-y-2">
             <Label htmlFor="donation-amounts">Amounts (comma-separated)</Label>
             <Input 
               id="donation-amounts" 
