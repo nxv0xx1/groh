@@ -2,7 +2,7 @@
 'use client';
 
 import type { ImageSettings } from '@/types/images';
-import { useRef, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { addHeroImage, deleteHeroImage, updateSponsorImage, uploadLogo, updateFavicon, updateDonationAmounts, addGalleryImage, deleteGalleryImage } from '../actions';
 import { Trash2, Upload, Loader2 } from 'lucide-react';
 import type { PutBlobResult } from '@vercel/blob';
+import { upload } from '@vercel/blob/client';
 
 const MAX_FILE_SIZE_MB = 4;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -29,11 +30,9 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
     serverAction: (payload: { url: string; [key: string]: any }) => Promise<any>
   ) => {
     event.preventDefault();
-
     setUploadingState(prev => ({ ...prev, [formId]: true }));
     
     const form = event.currentTarget;
-    const formData = new FormData(form);
     const fileInput = form.querySelector('input[type="file"]') as HTMLInputElement;
 
     if (!fileInput.files || fileInput.files.length === 0) {
@@ -45,24 +44,18 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
     const file = fileInput.files[0];
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
-        toast({ variant: 'destructive', title: 'File Too Large', description: `Please upload a file smaller than ${MAX_FILE_SIZE_MB}MB.` });
-        setUploadingState(prev => ({ ...prev, [formId]: false }));
-        return;
+      toast({ variant: 'destructive', title: 'File Too Large', description: `Please upload a file smaller than ${MAX_FILE_SIZE_MB}MB.` });
+      setUploadingState(prev => ({ ...prev, [formId]: false }));
+      return;
     }
 
     try {
-      const uploadResponse = await fetch(`/api/upload?filename=${file.name}`, {
-        method: 'POST',
-        body: JSON.stringify({ type: 'put-blob', addRandomSuffix: true }),
+      const newBlob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: '/api/upload',
       });
 
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to get upload signature.');
-      }
-      
-      const newBlob = (await uploadResponse.json()) as PutBlobResult;
-
-      const actionPayload: { url: string; [key: string]: any } = { url: newBlob.url };
+      const actionPayload: { url:string; [key: string]: any } = { url: newBlob.url };
       
       const altTextInput = form.querySelector('input[name="altText"]') as HTMLInputElement;
       if (altTextInput) {
@@ -314,3 +307,5 @@ export function AdminPanel({ initialImages }: { initialImages: ImageSettings }) 
     </div>
   );
 }
+
+    
